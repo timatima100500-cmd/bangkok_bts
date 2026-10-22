@@ -1,4 +1,13 @@
-import { FARE_MATRIX } from "@/data/fares";
+import {
+  FARE_MATRIX,
+  CORE_FARE_BY_STATIONS,
+  CORE_FARE_MAX,
+  EXT_FARE_BASE,
+  EXT_FARE_FREE_STATIONS,
+  EXT_FARE_PER_STATION,
+  EXT_FARE_MAX,
+  COMBINED_FARE_MAX,
+} from "@/data/fares";
 import {
   STATIONS,
   STATIONS_BY_LINE,
@@ -7,14 +16,21 @@ import {
 } from "@/data/stations";
 
 /**
- * Simplified fare model (stub):
- * BTS single-journey fares run 17–65 THB in ~3 THB steps by distance.
- * Until the real tariff matrix is loaded, we approximate by station count:
- * 17 THB base + 3 THB per additional stop, capped at 65 THB.
+ * BMA extension stations, distance-fared since 2025-11-01:
+ * - Mo Chit–Khu Khot: N9–N24
+ * - On Nut–Kheha: E10–E23
+ * - Wongwian Yai–Bang Wa: S9–S12
+ * Everything else (including the Gold Line) is treated as core concession.
  */
-const BASE_FARE = 17;
-const FARE_STEP = 3;
-const MAX_FARE = 65;
+const EXTENSION_CODES = new Set<string>([
+  ...range(9, 24).map((n) => `N${n}`),
+  ...range(10, 23).map((n) => `E${n}`),
+  ...range(9, 12).map((n) => `S${n}`),
+]);
+
+function range(from: number, to: number): number[] {
+  return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+}
 
 /** Average travel time per stop / per transfer, in minutes. */
 const MINUTES_PER_STOP = 2.5;
@@ -100,6 +116,8 @@ export interface FareResult {
   lines: BTSLine[];
   /** Full station-by-station path */
   path: Station[];
+  /** Stops inside the core concession / extensions */
+  zoneStops: { core: number; extension: number };
 }
 
 /** True when two nodes are the same physical station (an interchange hop). */
@@ -162,6 +180,34 @@ export function calculateFare(from: Station, to: Station): FareResult {
     .slice(0, -1)
     .filter((s, i) => s.line !== path[i + 1].line).length;
 
+  // Split stops between core concession and BMA extensions.
+  const extensionStops = path
+    .slice(0, -1)
+    .filter(
+      (s, i) =>
+        !isInterchangeEdge(s, path[i + 1]) &&
+        (EXTENSION_CODES.has(s.code) || EXTENSION_CODES.has(path[i + 1].code)),
+    ).length;
+  const coreStops = stops - extensionStops;
+
+  const coreFare =
+    coreStops === 0
+      ? 0
+      : coreStops >= 8
+        ? CORE_FARE_MAX
+        : (CORE_FARE_BY_STATIONS[coreStops] ?? CORE_FARE_MAX);
+  const extensionFare =
+    extensionStops === 0
+      ? 0
+      : Math.min(
+          EXT_FARE_MAX,
+          extensionStops <= EXT_FARE_FREE_STATIONS
+            ? EXT_FARE_BASE
+            : EXT_FARE_BASE +
+              EXT_FARE_PER_STATION *
+                (extensionStops - EXT_FARE_FREE_STATIONS),
+        );
+
   const lines: BTSLine[] = [];
   for (const s of path) {
     if (lines[lines.length - 1] !== s.line) lines.push(s.line);
@@ -173,12 +219,15 @@ export function calculateFare(from: Station, to: Station): FareResult {
   return {
     from,
     to,
-    fare: exactFare ?? Math.min(MAX_FARE, BASE_FARE + FARE_STEP * (stops - 1)),
+    fare:
+      exactFare ??
+      Math.min(COMBINED_FARE_MAX, coreFare + extensionFare),
     exact: exactFare !== undefined,
     minutes: Math.round(stops * MINUTES_PER_STOP + transfers * MINUTES_PER_TRANSFER),
     stops,
     transfers,
     lines,
     path,
+    zoneStops: { core: coreStops, extension: extensionStops },
   };
 }

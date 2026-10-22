@@ -9,6 +9,7 @@ import {
   type FareResult,
 } from "@/lib/calculateFare";
 import type { TKey } from "@/lib/i18n";
+import { playSuccessChime } from "@/lib/sound";
 import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
 import { LINE_LABEL_KEYS } from "@/lib/i18n";
 
@@ -49,7 +50,9 @@ export default function Home() {
       setError(t("errorSelectBoth"));
       return;
     }
-    setResult(runCalculation(from, to));
+    const next = runCalculation(from, to);
+    setResult(next);
+    if (next) playSuccessChime();
   }
 
   function handleSwap() {

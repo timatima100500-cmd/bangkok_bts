@@ -22,7 +22,7 @@ export const translations = {
     lineSukhumvit: "Sukhumvit Line",
     lineSilom: "Silom Line",
     lineGold: "Gold Line",
-    estimate: "Estimated fare — simplified tariff",
+    estimate: "Approximate fare — 2025/26 rates, extension part estimated",
   },
   th: {
     appTitle: "คิดค่าโดยสาร รถไฟฟ้า BTS",
@@ -45,7 +45,7 @@ export const translations = {
     lineSukhumvit: "สายสุขุมวิท",
     lineSilom: "สายสีลม",
     lineGold: "สายสีทอง",
-    estimate: "ค่าโดยสารโดยประมาณ — ตารางชั่วคราว",
+    estimate: "ค่าโดยสารโดยประมาณ — อัตรา 2568/69 ส่วนต่อขยายประมาณการ",
   },
 } as const;
 
