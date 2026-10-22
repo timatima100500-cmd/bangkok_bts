@@ -2,65 +2,194 @@
 
 import { useState } from "react";
 import StationSelect from "@/components/StationSelect";
-import { calculateFare, FareError, type FareResult } from "@/lib/calculateFare";
-import type { Station } from "@/data/stations";
+import { useLang } from "@/components/LanguageProvider";
+import {
+  calculateFare,
+  FareError,
+  type FareResult,
+} from "@/lib/calculateFare";
+import type { TKey } from "@/lib/i18n";
+import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
+import { LINE_LABEL_KEYS } from "@/lib/i18n";
 
 export default function Home() {
+  const { lang, t } = useLang();
   const [from, setFrom] = useState<Station | null>(null);
   const [to, setTo] = useState<Station | null>(null);
   const [result, setResult] = useState<FareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const nameOf = (s: Station) => (lang === "th" ? s.nameTh : s.nameEn);
+  const lineName = (line: BTSLine) => t(LINE_LABEL_KEYS[line]);
+
+  function runCalculation(
+    nextFrom: Station | null,
+    nextTo: Station | null,
+  ): FareResult | null {
+    if (!nextFrom || !nextTo) return null;
+    setError(null);
+    try {
+      return calculateFare(nextFrom, nextTo);
+    } catch (e) {
+      if (e instanceof FareError) {
+        const key: TKey =
+          e.code === "sameStation" ? "errorSame" : "errorNoRoute";
+        setError(t(key));
+        return null;
+      }
+      throw e;
+    }
+  }
 
   function handleCalculate() {
     setError(null);
     setResult(null);
 
     if (!from || !to) {
-      setError("Select both origin and destination stations");
+      setError(t("errorSelectBoth"));
       return;
     }
+    setResult(runCalculation(from, to));
+  }
 
-    try {
-      setResult(calculateFare(from.id, to.id));
-    } catch (e) {
-      setError(e instanceof FareError ? e.message : "Failed to calculate fare");
-    }
+  function handleSwap() {
+    setFrom(to);
+    setTo(from);
+    setError(null);
+    if (from && to) setResult(runCalculation(to, from));
   }
 
   return (
-    <div className="mt-8 space-y-4">
-      <StationSelect label="From" value={from} onChange={setFrom} />
-      <StationSelect label="To" value={to} onChange={setTo} />
+    <div className="mt-6 space-y-4">
+      <div className="relative space-y-3 rounded-2xl border border-border p-4">
+        <StationSelect label={t("from")} value={from} onChange={setFrom} />
+        <StationSelect label={t("to")} value={to} onChange={setTo} />
+
+        <button
+          type="button"
+          onClick={handleSwap}
+          aria-label={t("swap")}
+          title={t("swap")}
+          className="absolute top-1/2 -right-4 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background text-foreground/60 hover:text-foreground"
+        >
+          ⇅
+        </button>
+      </div>
 
       <button
         type="button"
         onClick={handleCalculate}
-        className="w-full rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90"
+        className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-90 active:opacity-80"
       >
-        Calculate Fare
+        {t("calculate")}
       </button>
 
       {error && (
-        <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+        <p
+          role="alert"
+          className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-500"
+        >
           {error}
         </p>
       )}
 
       {result && (
-        <div className="space-y-1 rounded-xl border border-border px-4 py-4">
-          <p className="text-sm text-foreground/60">
-            {result.from.nameEn} ({result.from.code}) → {result.to.nameEn} (
-            {result.to.code})
-          </p>
-          <p className="text-3xl font-semibold">
-            {result.fare} <span className="text-base font-normal">THB</span>
-          </p>
-          {!result.exact && (
-            <p className="text-xs text-foreground/40">
-              Stub price — fare matrix not loaded yet
+        <section className="space-y-5 rounded-2xl border border-border p-5 sm:p-6">
+          {/* Route */}
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: result.from.color }}
+                  aria-hidden
+                />
+                <span className="truncate text-sm font-medium">
+                  {nameOf(result.from)}
+                </span>
+                <span className="shrink-0 font-mono text-xs text-foreground/40">
+                  {result.from.code}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: result.to.color }}
+                  aria-hidden
+                />
+                <span className="truncate text-sm font-medium">
+                  {nameOf(result.to)}
+                </span>
+                <span className="shrink-0 font-mono text-xs text-foreground/40">
+                  {result.to.code}
+                </span>
+              </div>
+            </div>
+
+            {/* Lines used */}
+            <div className="flex flex-col items-end gap-1.5">
+              {result.lines.map((line) => (
+                <span
+                  key={line}
+                  className="flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground/70"
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: LINE_COLORS[line] }}
+                    aria-hidden
+                  />
+                  {lineName(line)}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Fare */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+              {t("fare")}
             </p>
+            <p className="mt-1 text-5xl font-semibold tracking-tight tabular-nums sm:text-6xl">
+              {result.fare}
+              <span className="ml-2 text-lg font-normal text-foreground/60">
+                THB
+              </span>
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border">
+            <div className="px-3 py-3 text-center sm:px-4">
+              <p className="text-lg font-semibold tabular-nums">
+                {result.minutes}
+                <span className="ml-1 text-xs font-normal text-foreground/50">
+                  {t("minutes")}
+                </span>
+              </p>
+              <p className="mt-0.5 text-xs text-foreground/50">
+                {t("travelTime")}
+              </p>
+            </div>
+            <div className="px-3 py-3 text-center sm:px-4">
+              <p className="text-lg font-semibold tabular-nums">
+                {result.stops}
+              </p>
+              <p className="mt-0.5 text-xs text-foreground/50">{t("stops")}</p>
+            </div>
+            <div className="px-3 py-3 text-center sm:px-4">
+              <p className="text-lg font-semibold tabular-nums">
+                {result.transfers}
+              </p>
+              <p className="mt-0.5 text-xs text-foreground/50">
+                {result.transfers === 1 ? t("transfer") : t("transfers")}
+              </p>
+            </div>
+          </div>
+
+          {!result.exact && (
+            <p className="text-xs text-foreground/40">{t("estimate")}</p>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

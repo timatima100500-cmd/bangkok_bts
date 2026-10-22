@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ThemeProvider from "@/components/ThemeProvider";
-import ThemeToggle from "@/components/ThemeToggle";
+import LanguageProvider from "@/components/LanguageProvider";
+import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,17 +31,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <div className="min-h-screen bg-background text-foreground">
-            <header className="flex items-center justify-between px-6 py-4">
-              <span className="text-sm font-semibold tracking-tight">
-                BTS Fare Calculator
-              </span>
-              <ThemeToggle />
-            </header>
-            <main className="mx-auto w-full max-w-lg px-6 pb-16">
-              {children}
-            </main>
-          </div>
+          <LanguageProvider>
+            <div className="flex min-h-screen flex-col bg-background text-foreground">
+              <SiteHeader />
+              <main className="mx-auto w-full max-w-lg flex-1 px-5 pb-16 sm:px-6">
+                {children}
+              </main>
+            </div>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
