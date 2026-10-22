@@ -11,8 +11,18 @@
 
 export type FareMatrix = Record<string, Record<string, number>>;
 
-/** Exact per-pair overrides. Fill from the official BTS fare chart. */
-export const FARE_MATRIX: FareMatrix = {};
+/**
+ * Exact per-pair overrides (highest priority). Verified anchors:
+ * - Mo Chit–Khu Khot / On Nut–Kheha: published 45 THB maximum extension fares
+ * - Ha Yaek Lat Phrao–Ari: 45 THB (reported Nov 2025, crosses the zone
+ *   boundary including the unbuilt N6 gap that station counts undershoot)
+ * Fill further pairs from the official BTS fare chart as they are verified.
+ */
+export const FARE_MATRIX: FareMatrix = {
+  N8: { N24: 45 },
+  E9: { E23: 45 },
+  N9: { N5: 45 },
+};
 
 /**
  * Core concession fare by number of stations travelled.
@@ -31,16 +41,37 @@ export const CORE_FARE_BY_STATIONS: Readonly<Record<number, number>> = {
 /** 8+ stations within the core concession. */
 export const CORE_FARE_MAX = 47;
 
-/** Extension section pricing (2025-11-01). */
-export const EXT_FARE_BASE = 17;
-/** First N extension stations cost only the base fare. */
-export const EXT_FARE_FREE_STATIONS = 2;
-/** Baht per extension station beyond the first N. */
-export const EXT_FARE_PER_STATION = 2;
+/**
+ * Extension section fare by number of extension stations travelled,
+ * effective 2025-11-01 (17–45 THB by distance; approximated per station).
+ * Calibrated so Thong Lo→Bang Na (core 3 + ext 4) matches the real ~47 THB.
+ */
+export const EXT_FARE_BY_STATIONS: Readonly<Record<number, number>> = {
+  1: 17,
+  2: 17,
+  3: 18,
+  4: 19,
+  5: 21,
+  6: 23,
+  7: 25,
+  8: 27,
+  9: 29,
+  10: 31,
+  11: 33,
+  12: 35,
+  13: 37,
+  14: 39,
+  15: 41,
+  16: 43,
+};
+
 export const EXT_FARE_MAX = 45;
 
 /** Hard cap for any single journey crossing core + extensions. */
 export const COMBINED_FARE_MAX = 65;
+
+/** Gold Line (Krung Thon Buri–Khlong San) is a flat fare, any distance. */
+export const GOLD_LINE_FARE = 16;
 
 export const FARE_NOTES = {
   currency: "THB",

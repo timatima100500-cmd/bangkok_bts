@@ -2,11 +2,10 @@ import {
   FARE_MATRIX,
   CORE_FARE_BY_STATIONS,
   CORE_FARE_MAX,
-  EXT_FARE_BASE,
-  EXT_FARE_FREE_STATIONS,
-  EXT_FARE_PER_STATION,
+  EXT_FARE_BY_STATIONS,
   EXT_FARE_MAX,
   COMBINED_FARE_MAX,
+  GOLD_LINE_FARE,
 } from "@/data/fares";
 import {
   STATIONS,
@@ -201,11 +200,7 @@ export function calculateFare(from: Station, to: Station): FareResult {
       ? 0
       : Math.min(
           EXT_FARE_MAX,
-          extensionStops <= EXT_FARE_FREE_STATIONS
-            ? EXT_FARE_BASE
-            : EXT_FARE_BASE +
-              EXT_FARE_PER_STATION *
-                (extensionStops - EXT_FARE_FREE_STATIONS),
+          EXT_FARE_BY_STATIONS[extensionStops] ?? EXT_FARE_MAX,
         );
 
   const lines: BTSLine[] = [];
@@ -216,12 +211,18 @@ export function calculateFare(from: Station, to: Station): FareResult {
   const exactFare =
     FARE_MATRIX[from.code]?.[to.code] ?? FARE_MATRIX[to.code]?.[from.code];
 
+  // Gold Line standalone trips use its flat fare; mixed journeys use the
+  // regular zone model with the Gold leg counted as core stops.
+  const isGoldOnly = lines.length === 1 && lines[0] === "gold";
+
   return {
     from,
     to,
     fare:
       exactFare ??
-      Math.min(COMBINED_FARE_MAX, coreFare + extensionFare),
+      (isGoldOnly
+        ? GOLD_LINE_FARE
+        : Math.min(COMBINED_FARE_MAX, coreFare + extensionFare)),
     exact: exactFare !== undefined,
     minutes: Math.round(stops * MINUTES_PER_STOP + transfers * MINUTES_PER_TRANSFER),
     stops,
