@@ -1,13 +1,10 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { STATIONS, type Station } from "@/data/stations";
+import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
 import { useLang } from "@/components/LanguageProvider";
-
-/** One entry per physical station (CEN appears on two lines). */
-const UNIQUE_STATIONS = STATIONS.filter(
-  (s, i, arr) => arr.findIndex((x) => x.code === s.code) === i,
-);
+import { LINE_LABEL_KEYS } from "@/lib/i18n";
+import { getStationGroups, SELECTOR_LINES } from "@/lib/stationOptions";
 
 interface StationSelectProps {
   label: string;
@@ -23,20 +20,13 @@ export default function StationSelect({
   const { lang, t } = useLang();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [line, setLine] = useState<BTSLine | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const primary = (s: Station) => (lang === "th" ? s.nameTh : s.nameEn);
   const secondary = (s: Station) => (lang === "th" ? s.nameEn : s.nameTh);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return UNIQUE_STATIONS;
-    return UNIQUE_STATIONS.filter((s) =>
-      [s.code, s.nameEn, s.nameTh, s.nameZh, s.nameRu, s.line].some((f) =>
-        f.toLowerCase().includes(q),
-      ),
-    );
-  }, [query]);
+  const groups = useMemo(() => getStationGroups(query, line), [query, line]);
 
   const row = (s: Station) => (
     <>
@@ -70,6 +60,34 @@ export default function StationSelect({
             if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
           }}
         >
+          <div
+            role="group"
+            aria-label={t("filterByLine")}
+            className="grid grid-cols-2 gap-2 border-b border-border p-2"
+          >
+            {[null, ...SELECTOR_LINES].map((option) => (
+              <button
+                key={option ?? "all"}
+                type="button"
+                aria-pressed={line === option}
+                onClick={() => setLine(option)}
+                className={`flex min-h-11 min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs ${
+                  line === option
+                    ? "border-foreground bg-foreground/10 font-semibold"
+                    : "border-border hover:bg-foreground/5"
+                }`}
+              >
+                {option && (
+                  <span
+                    className="h-3 w-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: LINE_COLORS[option] }}
+                    aria-hidden
+                  />
+                )}
+                {option ? t(LINE_LABEL_KEYS[option]) : t("allLines")}
+              </button>
+            ))}
+          </div>
           <input
             ref={inputRef}
             autoFocus
@@ -77,28 +95,40 @@ export default function StationSelect({
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchStation")}
             aria-label={t("searchStation")}
-            className="min-h-12 w-full rounded-t-xl bg-transparent px-3 py-3 text-base placeholder:text-foreground/40"
+            className="min-h-12 w-full bg-transparent px-3 py-3 text-base placeholder:text-foreground/40"
           />
           <ul className="max-h-64 overflow-y-auto border-t border-border">
-            {filtered.length === 0 && (
+            {groups.length === 0 && (
               <li className="px-4 py-2.5 text-sm text-foreground/50">
                 {t("noResults")}
               </li>
             )}
-            {filtered.map((s) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    onChange(s);
-                    setOpen(false);
-                    setQuery("");
-                  }}
-                  className="flex min-h-12 w-full items-center gap-2 px-3 py-3 text-left hover:bg-foreground/5"
+            {groups.map((group) => (
+              <li key={group.line}>
+                <div
+                  className="sticky top-0 z-10 border-b border-border bg-background px-3 py-2 text-xs font-semibold"
+                  style={{ borderLeft: `4px solid ${LINE_COLORS[group.line]}` }}
                 >
-                  {row(s)}
-                </button>
+                  {t(LINE_LABEL_KEYS[group.line])}
+                </div>
+                <ul>
+                  {group.stations.map((s) => (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          onChange(s);
+                          setOpen(false);
+                          setQuery("");
+                        }}
+                        className="flex min-h-12 w-full items-center gap-2 px-3 py-3 text-left hover:bg-foreground/5"
+                      >
+                        {row(s)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>
@@ -107,6 +137,8 @@ export default function StationSelect({
         <button
           type="button"
           onClick={() => {
+            setLine(null);
+            setQuery("");
             setOpen(true);
             requestAnimationFrame(() => inputRef.current?.focus());
           }}
