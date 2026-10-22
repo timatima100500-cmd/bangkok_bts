@@ -22,6 +22,20 @@ export const FARE_MATRIX: FareMatrix = {
   N8: { N24: 45 },
   E9: { E23: 45 },
   N9: { N5: 45 },
+  // Core-only anchors extracted from reference/old-src/fare_SJT_2JAN24.docx.
+  // Checked in both directions against its 61-column chart (including future N6).
+  // These agree with the existing core calculation. The document's 2024
+  // extension fares are obsolete for this model and must not override it.
+  CEN: { E1: 17, E9: 47 },
+  E1: { E2: 17 },
+  E2: { E3: 17 },
+  E3: { E4: 17 },
+  E4: { E5: 17 },
+  E5: { E6: 17 },
+  E6: { E7: 17, E9: 28 },
+  E7: { E8: 17 },
+  E8: { E9: 17 },
+  S2: { S3: 17 },
 };
 
 /**

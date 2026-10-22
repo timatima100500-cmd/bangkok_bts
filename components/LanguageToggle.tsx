@@ -22,8 +22,8 @@ export default function LanguageToggle() {
           aria-pressed={lang === option}
           className={
             lang === option
-              ? "bg-foreground px-2.5 py-1.5 uppercase text-background"
-              : "px-2.5 py-1.5 uppercase text-foreground/60 hover:bg-foreground/5"
+              ? "min-h-11 min-w-11 bg-foreground px-3 py-2 uppercase text-background"
+              : "min-h-11 min-w-11 px-3 py-2 uppercase text-foreground/60 hover:bg-foreground/5"
           }
         >
           {option}

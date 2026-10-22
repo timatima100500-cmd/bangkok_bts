@@ -32,9 +32,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <LanguageProvider>
-            <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <div className="phone-shell flex flex-col bg-background text-foreground">
               <SiteHeader />
-              <main className="mx-auto w-full max-w-lg flex-1 px-5 pb-16 sm:px-6">
+              <main className="w-full min-w-0 flex-1 px-4 pb-16">
                 {children}
               </main>
             </div>

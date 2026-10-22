@@ -23,6 +23,29 @@
 }
 
 body {
-  background: var(--background);
+  margin: 0;
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
   color: var(--foreground);
+}
+
+.phone-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  border-inline: 1px solid var(--border);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+button,
+input {
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
 }

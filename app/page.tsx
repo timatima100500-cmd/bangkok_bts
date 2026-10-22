@@ -64,25 +64,25 @@ export default function Home() {
 
   return (
     <div className="mt-6 space-y-4">
-      <div className="relative space-y-3 rounded-2xl border border-border p-4">
+      <div className="space-y-3 rounded-2xl border border-border p-4">
         <StationSelect label={t("from")} value={from} onChange={setFrom} />
-        <StationSelect label={t("to")} value={to} onChange={setTo} />
 
         <button
           type="button"
           onClick={handleSwap}
           aria-label={t("swap")}
           title={t("swap")}
-          className="absolute top-1/2 -right-4 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background text-foreground/60 hover:text-foreground"
+          className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-xl text-foreground/60 hover:text-foreground"
         >
           ⇅
         </button>
+        <StationSelect label={t("to")} value={to} onChange={setTo} />
       </div>
 
       <button
         type="button"
         onClick={handleCalculate}
-        className="w-full rounded-xl bg-foreground px-4 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-90 active:opacity-80"
+        className="min-h-12 w-full rounded-xl bg-foreground px-4 py-3 text-base font-semibold text-background transition-opacity hover:opacity-90 active:opacity-80"
       >
         {t("calculate")}
       </button>
@@ -97,9 +97,9 @@ export default function Home() {
       )}
 
       {result && (
-        <section className="space-y-5 rounded-2xl border border-border p-5 sm:p-6">
+        <section className="space-y-5 rounded-2xl border border-border p-4">
           {/* Route */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span
@@ -107,7 +107,7 @@ export default function Home() {
                   style={{ backgroundColor: result.from.color }}
                   aria-hidden
                 />
-                <span className="truncate text-sm font-medium">
+                <span className="min-w-0 break-words text-sm font-medium">
                   {nameOf(result.from)}
                 </span>
                 <span className="shrink-0 font-mono text-xs text-foreground/40">
@@ -120,7 +120,7 @@ export default function Home() {
                   style={{ backgroundColor: result.to.color }}
                   aria-hidden
                 />
-                <span className="truncate text-sm font-medium">
+                <span className="min-w-0 break-words text-sm font-medium">
                   {nameOf(result.to)}
                 </span>
                 <span className="shrink-0 font-mono text-xs text-foreground/40">
@@ -130,7 +130,7 @@ export default function Home() {
             </div>
 
             {/* Lines used */}
-            <div className="flex flex-col items-end gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {result.lines.map((line) => (
                 <span
                   key={line}
@@ -152,7 +152,7 @@ export default function Home() {
             <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
               {t("fare")}
             </p>
-            <p className="mt-1 text-5xl font-semibold tracking-tight tabular-nums sm:text-6xl">
+            <p className="mt-1 text-5xl font-semibold tracking-tight tabular-nums">
               {result.fare}
               <span className="ml-2 text-lg font-normal text-foreground/60">
                 THB
@@ -162,7 +162,7 @@ export default function Home() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border">
-            <div className="px-3 py-3 text-center sm:px-4">
+            <div className="min-w-0 px-2 py-3 text-center">
               <p className="text-lg font-semibold tabular-nums">
                 {result.minutes}
                 <span className="ml-1 text-xs font-normal text-foreground/50">
@@ -173,13 +173,13 @@ export default function Home() {
                 {t("travelTime")}
               </p>
             </div>
-            <div className="px-3 py-3 text-center sm:px-4">
+            <div className="min-w-0 px-2 py-3 text-center">
               <p className="text-lg font-semibold tabular-nums">
                 {result.stops}
               </p>
               <p className="mt-0.5 text-xs text-foreground/50">{t("stops")}</p>
             </div>
-            <div className="px-3 py-3 text-center sm:px-4">
+            <div className="min-w-0 px-2 py-3 text-center">
               <p className="text-lg font-semibold tabular-nums">
                 {result.transfers}
               </p>

@@ -32,7 +32,7 @@ export default function StationSelect({
     const q = query.trim().toLowerCase();
     if (!q) return UNIQUE_STATIONS;
     return UNIQUE_STATIONS.filter((s) =>
-      [s.code, s.nameEn, s.nameTh, s.line].some((f) =>
+      [s.code, s.nameEn, s.nameTh, s.nameZh, s.nameRu, s.line].some((f) =>
         f.toLowerCase().includes(q),
       ),
     );
@@ -45,12 +45,14 @@ export default function StationSelect({
         style={{ backgroundColor: s.color }}
         aria-hidden
       />
-      <span className="w-10 shrink-0 font-mono text-xs text-foreground/60">
+      <span className="w-8 shrink-0 font-mono text-xs text-foreground/60">
         {s.code}
       </span>
-      <span className="truncate text-sm">{primary(s)}</span>
-      <span className="ml-auto shrink-0 truncate text-xs text-foreground/40">
-        {secondary(s)}
+      <span className="min-w-0 flex-1">
+        <span className="block break-words text-sm">{primary(s)}</span>
+        <span className="mt-0.5 block break-words text-xs text-foreground/40">
+          {secondary(s)}
+        </span>
       </span>
     </>
   );
@@ -62,15 +64,20 @@ export default function StationSelect({
       </label>
 
       {open ? (
-        <div className="flex flex-col rounded-xl border border-border bg-background shadow-lg">
+        <div
+          className="flex flex-col rounded-xl border border-border bg-background shadow-lg"
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+          }}
+        >
           <input
             ref={inputRef}
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onBlur={() => setOpen(false)}
             placeholder={t("searchStation")}
-            className="w-full rounded-t-xl bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-foreground/40"
+            aria-label={t("searchStation")}
+            className="min-h-12 w-full rounded-t-xl bg-transparent px-3 py-3 text-base placeholder:text-foreground/40"
           />
           <ul className="max-h-64 overflow-y-auto border-t border-border">
             {filtered.length === 0 && (
@@ -88,7 +95,7 @@ export default function StationSelect({
                     setOpen(false);
                     setQuery("");
                   }}
-                  className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-foreground/5"
+                  className="flex min-h-12 w-full items-center gap-2 px-3 py-3 text-left hover:bg-foreground/5"
                 >
                   {row(s)}
                 </button>
@@ -103,7 +110,7 @@ export default function StationSelect({
             setOpen(true);
             requestAnimationFrame(() => inputRef.current?.focus());
           }}
-          className="flex w-full items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 text-left text-sm hover:border-foreground/30"
+          className="flex min-h-12 w-full items-center gap-2 rounded-xl border border-border bg-background px-3 py-3 text-left text-base hover:border-foreground/30"
         >
           {value ? (
             row(value)
