@@ -21,6 +21,7 @@ const { METRO_LINES } = await import("../data/transit.ts");
 const { ADDITIONAL_STATIONS, METRO_STATIONS } = await import("../data/metroStations.ts");
 const { sumFareLegs } = await import("../lib/fareModel.ts");
 const fares = await import("../data/fares.ts");
+const { getFareTable, getAllFareTables, getAllFareSources } = await import("../lib/fareTables.ts");
 const { sitePath, pageMetadata } = await import("../lib/site.ts");
 const { default: sitemap } = await import("../app/sitemap.ts");
 const { translations } = await import("../lib/i18n.ts");
@@ -125,6 +126,22 @@ test("all tariff values carry provenance and honest dates", () => {
   }
 });
 
+test("BTS fare version is selected by effective date", () => {
+  const table = getFareTable("bts", "2026-12-31");
+  assert.equal(table.effectiveFrom, "2025-11-01");
+  assert.equal(table.approximate, true);
+  assert.deepEqual(table.sources, fares.FARE_NOTES.sources);
+  assert.equal(table.CORE_FARE_BY_STATIONS[1].amount, fares.CORE_FARE_BY_STATIONS[1].amount);
+  assert.equal(getFareTable("bts", "2025-11-01"), table);
+  assert.throws(() => getFareTable("bts", "2025-10-31"), /No bts fare table for 2025-10-31; earliest is 2025-11-01/);
+  assert.throws(() => getFareTable("bts", "2026-02-30"), /Invalid fare date/);
+});
+
+test("source listing is derived from registered fare tables", () => {
+  assert.deepEqual(getAllFareTables().map((table) => table.effectiveFrom), ["2025-11-01"]);
+  assert.deepEqual(getAllFareSources().map((source) => source.id), fares.FARE_NOTES.sources.map((source) => source.id));
+});
+
 test("legacy Green BTS prices remain, with honest approximate labels", () => {
   const result = calculateFare(getStationByCode("E6"), getStationByCode("E13"));
   assert.equal(result.fare, 47);
@@ -170,7 +187,7 @@ test("content URLs provide equivalent EN/RU paths", () => {
 test("sitemap contains only indexable pages", () => {
   const listed = sitemap().map(({ url }) => url);
   assert.deepEqual(listed, ["https://btsguide.com/", "https://btsguide.com/ru/"]);
-  for (const [lang, path] of [["en", "/about"], ["ru", "/sources"], ["en", "/stations/W1"], ["ru", "/guides/terminal-21"]]) {
+  for (const [lang, path] of [["en", "/about"], ["ru", "/sources"], ["en", "/fares"], ["ru", "/fares"], ["en", "/stations/W1"], ["ru", "/guides/terminal-21"]]) {
     const metadata = pageMetadata(lang, path, "Draft", "Draft", true);
     assert.equal(metadata.robots.index, false);
     assert.ok(!listed.includes(metadata.alternates.canonical));

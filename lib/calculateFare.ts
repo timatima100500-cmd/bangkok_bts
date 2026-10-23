@@ -1,13 +1,4 @@
-import {
-  FARE_MATRIX,
-  CORE_FARE_BY_STATIONS,
-  CORE_FARE_MAX,
-  EXT_FARE_BY_STATIONS,
-  EXT_FARE_MAX,
-  COMBINED_FARE_MAX,
-  GOLD_LINE_FARE,
-  ZERO_FARE,
-} from "@/data/fares";
+import { getFareTable } from "@/lib/fareTables";
 import { sumFareLegs, type FareValue, type JourneyFare } from "@/lib/fareModel";
 import {
   STATIONS,
@@ -174,6 +165,17 @@ export function calculateFare(from: Station, to: Station): FareResult {
   if (!path || path.length < 2) {
     throw new FareError("noRoute", "No route found between these stations");
   }
+
+  const {
+    FARE_MATRIX,
+    CORE_FARE_BY_STATIONS,
+    CORE_FARE_MAX,
+    EXT_FARE_BY_STATIONS,
+    EXT_FARE_MAX,
+    COMBINED_FARE_MAX,
+    GOLD_LINE_FARE,
+    ZERO_FARE,
+  } = getFareTable("bts", new Date());
 
   const stops = path
     .slice(0, -1)
