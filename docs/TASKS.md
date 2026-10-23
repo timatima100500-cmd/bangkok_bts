@@ -6,14 +6,15 @@
 
 | ID | Неделя | Задача | Статус |
 |---|---|---|---|
-| T00 | 1 | Переписать ROADMAP.md под PLAN | review |
+| T00 | 1 | Переписать ROADMAP.md под PLAN | done |
 | T01 | 1 | Чистка кода | done |
 | T02 | 1 | Статический экспорт + маршруты EN/RU + SEO-база | done |
-| 👤 L1 | 1 | Домен btsguide.com, Cloudflare Pages, GSC, Web Analytics, заявки в партнёрки | todo |
+| 👤 L1 | 1 | Домен + Cloudflare Pages | done |
 | T03 | 2 | Версионирование тарифов BTS + /fares + /sources | done |
 | T04 | 2 | MRT Blue, ARL, Red→DMK в данных и калькуляторе | todo |
-| T05 | 3 | Контент-система (markdown, verified, noindex) + партнёрские компоненты | todo |
+| T05 | 3 | Контент-система (markdown, verified, noindex) + партнёрские компоненты | review |
 | T06 | 3 | Черновики: 2 аэропорта + /tickets-and-cards (EN) | todo |
+| 👤 L1b | 3, после T06 | Email Routing hello@btsguide.com, GSC, Web Analytics, заявки в партнёрки | todo |
 | 👤 L2 | 4 | Поездка №1: фото, выходы, пересадки → `notes/trip-1.md` | todo |
 | T07 | 5 | Шаблон /get-to + 5 гайдов из заметок поездки | todo |
 | T08 | 6 | Шаблон /stations + 15 станций | todo |
