@@ -15,6 +15,8 @@ registerHooks({
 const { STATIONS_BY_LINE, LINE_COLORS } = await import("../data/stations.ts");
 const { getStationGroups } = await import("../lib/stationOptions.ts");
 const { calculateFare } = await import("../lib/calculateFare.ts");
+const { getStationTips } = await import("../lib/stationTips.ts");
+const { getStationByCode } = await import("../data/stations.ts");
 
 const silomCodes = ["W1", "CEN", ...Array.from({ length: 12 }, (_, i) => `S${i + 1}`)];
 
@@ -68,4 +70,20 @@ test("Gold Line remains connected through Krung Thon Buri", () => {
   assert.deepEqual(result.lines, ["gold", "silom", "sukhumvit"]);
   assert.equal(result.transfers, 2);
   assert.ok(result.path.some((station, i) => station.code === "G1" && result.path[i + 1]?.code === "S7"));
+});
+
+test("station tips prefer the destination and include at most two real points", () => {
+  const from = getStationByCode("W1");
+  const to = getStationByCode("E4");
+  assert.deepEqual(getStationTips(from, to).map(({ station, attraction }) => [station.code, attraction.id]), [
+    ["E4", "terminal_21"], ["W1", "mbk_center"],
+  ]);
+  assert.equal(getStationTips(to, from)[0].attraction.id, "mbk_center");
+  assert.deepEqual(getStationTips(getStationByCode("S6"), getStationByCode("E6")).map(({ attraction }) => attraction.id), ["wat_pho", "grand_palace"]);
+});
+
+test("tips do not invent places or repeat highlights for a shared station", () => {
+  assert.deepEqual(getStationTips(getStationByCode("E6"), getStationByCode("E13")), []);
+  const tips = getStationTips(getStationByCode("CEN", "silom"), getStationByCode("CEN", "sukhumvit"));
+  assert.deepEqual(tips.map(({ attraction }) => attraction.id), ["siam_paragon"]);
 });

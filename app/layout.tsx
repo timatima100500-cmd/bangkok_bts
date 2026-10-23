@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import ThemeProvider from "@/components/ThemeProvider";
 import LanguageProvider from "@/components/LanguageProvider";
 import SiteHeader from "@/components/SiteHeader";
+import AppearanceProvider from "@/components/AppearanceProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,12 +33,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <LanguageProvider>
-            <div className="phone-shell flex flex-col bg-background text-foreground">
-              <SiteHeader />
-              <main className="w-full min-w-0 flex-1 px-4 pb-16">
-                {children}
-              </main>
-            </div>
+            <AppearanceProvider>
+              <div className="phone-shell flex flex-col bg-background text-foreground">
+                <SiteHeader />
+                <main className="w-full min-w-0 flex-1 px-4 pb-16">
+                  {children}
+                </main>
+              </div>
+            </AppearanceProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

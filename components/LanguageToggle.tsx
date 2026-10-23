@@ -10,7 +10,7 @@ export default function LanguageToggle() {
 
   return (
     <div
-      className="flex overflow-hidden rounded-lg border border-border text-xs font-medium"
+      className="segmented-control flex shrink-0"
       role="group"
       aria-label="Language"
     >
@@ -20,11 +20,7 @@ export default function LanguageToggle() {
           type="button"
           onClick={() => setLang(option)}
           aria-pressed={lang === option}
-          className={
-            lang === option
-              ? "min-h-11 min-w-11 bg-foreground px-3 py-2 uppercase text-background"
-              : "min-h-11 min-w-11 px-3 py-2 uppercase text-foreground/60 hover:bg-foreground/5"
-          }
+          className="segment min-w-11 uppercase"
         >
           {option}
         </button>

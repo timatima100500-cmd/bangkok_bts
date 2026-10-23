@@ -35,12 +35,12 @@ export default function StationSelect({
         style={{ backgroundColor: s.color }}
         aria-hidden
       />
-      <span className="w-8 shrink-0 font-mono text-xs text-foreground/60">
+      <span className="w-8 shrink-0 font-mono text-xs font-semibold text-muted">
         {s.code}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block break-words text-sm">{primary(s)}</span>
-        <span className="mt-0.5 block break-words text-xs text-foreground/40">
+        <span className="block break-words text-sm font-medium">{primary(s)}</span>
+        <span className="mt-0.5 block break-words text-xs text-muted">
           {secondary(s)}
         </span>
       </span>
@@ -49,13 +49,13 @@ export default function StationSelect({
 
   return (
     <div className="relative w-full">
-      <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-foreground/50">
+      <label className="station-label">
         {label}
       </label>
 
       {open ? (
         <div
-          className="flex flex-col rounded-xl border border-border bg-background shadow-lg"
+          className="station-menu flex flex-col"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
           }}
@@ -71,11 +71,7 @@ export default function StationSelect({
                 type="button"
                 aria-pressed={line === option}
                 onClick={() => setLine(option)}
-                className={`flex min-h-11 min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs ${
-                  line === option
-                    ? "border-foreground bg-foreground/10 font-semibold"
-                    : "border-border hover:bg-foreground/5"
-                }`}
+                className="line-filter flex min-h-11 min-w-0 items-center gap-2 rounded-lg border border-border px-2 py-2 text-left text-xs font-medium hover:bg-accent-soft"
               >
                 {option && (
                   <span
@@ -95,18 +91,18 @@ export default function StationSelect({
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchStation")}
             aria-label={t("searchStation")}
-            className="min-h-12 w-full bg-transparent px-3 py-3 text-base placeholder:text-foreground/40"
+            className="min-h-12 w-full bg-transparent px-3 py-3 text-base placeholder:text-muted"
           />
           <ul className="max-h-64 overflow-y-auto border-t border-border">
             {groups.length === 0 && (
-              <li className="px-4 py-2.5 text-sm text-foreground/50">
+              <li className="px-4 py-2.5 text-sm text-muted">
                 {t("noResults")}
               </li>
             )}
             {groups.map((group) => (
               <li key={group.line}>
                 <div
-                  className="sticky top-0 z-10 border-b border-border bg-background px-3 py-2 text-xs font-semibold"
+                  className="sticky top-0 z-10 border-b border-border bg-surface px-3 py-2 text-xs font-semibold"
                   style={{ borderLeft: `4px solid ${LINE_COLORS[group.line]}` }}
                 >
                   {t(LINE_LABEL_KEYS[group.line])}
@@ -122,7 +118,7 @@ export default function StationSelect({
                           setOpen(false);
                           setQuery("");
                         }}
-                        className="flex min-h-12 w-full items-center gap-2 px-3 py-3 text-left hover:bg-foreground/5"
+                        className="flex min-h-14 w-full items-center gap-2 px-3 py-3 text-left hover:bg-accent-soft"
                       >
                         {row(s)}
                       </button>
@@ -142,12 +138,12 @@ export default function StationSelect({
             setOpen(true);
             requestAnimationFrame(() => inputRef.current?.focus());
           }}
-          className="flex min-h-12 w-full items-center gap-2 rounded-xl border border-border bg-background px-3 py-3 text-left text-base hover:border-foreground/30"
+          className="station-field flex w-full items-center gap-2 px-3 py-3 text-left text-base"
         >
           {value ? (
             row(value)
           ) : (
-            <span className="text-foreground/40">{t("selectStation")}</span>
+            <span className="text-sm text-muted">{t("selectStation")}</span>
           )}
         </button>
       )}
