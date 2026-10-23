@@ -6,11 +6,11 @@
 
 | ID | Неделя | Задача | Статус |
 |---|---|---|---|
-| T00 | 1 | Переписать ROADMAP.md под PLAN | todo |
+| T00 | 1 | Переписать ROADMAP.md под PLAN | review |
 | T01 | 1 | Чистка кода | done |
 | T02 | 1 | Статический экспорт + маршруты EN/RU + SEO-база | done |
 | 👤 L1 | 1 | Домен btsguide.com, Cloudflare Pages, GSC, Web Analytics, заявки в партнёрки | todo |
-| T03 | 2 | Версионирование тарифов BTS + /fares + /sources | review |
+| T03 | 2 | Версионирование тарифов BTS + /fares + /sources | done |
 | T04 | 2 | MRT Blue, ARL, Red→DMK в данных и калькуляторе | todo |
 | T05 | 3 | Контент-система (markdown, verified, noindex) + партнёрские компоненты | todo |
 | T06 | 3 | Черновики: 2 аэропорта + /tickets-and-cards (EN) | todo |
