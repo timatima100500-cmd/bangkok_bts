@@ -3,17 +3,12 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   type ReactNode,
 } from "react";
 import { translations, type Lang, type TKey } from "@/lib/i18n";
 
-const STORAGE_KEY = "bts-lang";
-
 interface LangContextValue {
   lang: Lang;
-  setLang: (lang: Lang) => void;
   t: (key: TKey) => string;
 }
 
@@ -27,29 +22,15 @@ export function useLang(): LangContextValue {
 
 export default function LanguageProvider({
   children,
+  lang = "en",
 }: {
   children: ReactNode;
+  lang?: Lang;
 }) {
-  const [lang, setLangState] = useState<Lang>("en");
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "en" || saved === "th") {
-      setLangState(saved);
-    } else if (navigator.language.toLowerCase().startsWith("th")) {
-      setLangState("th");
-    }
-  }, []);
-
-  const setLang = (next: Lang) => {
-    setLangState(next);
-    localStorage.setItem(STORAGE_KEY, next);
-  };
-
   const t = (key: TKey) => translations[lang][key];
 
   return (
-    <LangContext.Provider value={{ lang, setLang, t }}>
+    <LangContext.Provider value={{ lang, t }}>
       {children}
     </LangContext.Provider>
   );

@@ -17,6 +17,13 @@ const { getStationGroups } = await import("../lib/stationOptions.ts");
 const { calculateFare } = await import("../lib/calculateFare.ts");
 const { getStationTips } = await import("../lib/stationTips.ts");
 const { getStationByCode } = await import("../data/stations.ts");
+const { METRO_LINES } = await import("../data/transit.ts");
+const { ADDITIONAL_STATIONS, METRO_STATIONS } = await import("../data/metroStations.ts");
+const { sumFareLegs } = await import("../lib/fareModel.ts");
+const fares = await import("../data/fares.ts");
+const { getRouteContent } = await import("../lib/content.ts");
+const { sitePath, pageMetadata } = await import("../lib/site.ts");
+const { translations } = await import("../lib/i18n.ts");
 
 const silomCodes = ["W1", "CEN", ...Array.from({ length: 12 }, (_, i) => `S${i + 1}`)];
 
@@ -86,4 +93,77 @@ test("tips do not invent places or repeat highlights for a shared station", () =
   assert.deepEqual(getStationTips(getStationByCode("E6"), getStationByCode("E13")), []);
   const tips = getStationTips(getStationByCode("CEN", "silom"), getStationByCode("CEN", "sukhumvit"));
   assert.deepEqual(tips.map(({ attraction }) => attraction.id), ["siam_paragon"]);
+});
+
+test("every new network has a scaffold, without fabricated routing stations", () => {
+  for (const id of ["mrt-blue", "mrt-purple", "mrt-yellow", "mrt-pink", "airport-rail-link", "red-dark", "red-light"]) {
+    const line = METRO_LINES.find((candidate) => candidate.id === id);
+    assert.equal(line.dataStatus, "scaffold");
+    assert.ok(line.operator && line.operatorType && line.fareSystem);
+    assert.deepEqual(ADDITIONAL_STATIONS[id], []);
+  }
+  for (const station of METRO_STATIONS) {
+    assert.ok(station.code && station.nameEn && station.nameRu && station.operator && station.operatorType && station.fareSystem);
+    assert.equal(station.coordinateStatus, "unverified");
+  }
+});
+
+test("all tariff values carry provenance and honest dates", () => {
+  const values = [
+    ...Object.values(fares.FARE_MATRIX).flatMap((row) => Object.values(row)),
+    ...Object.values(fares.CORE_FARE_BY_STATIONS), ...Object.values(fares.EXT_FARE_BY_STATIONS),
+    fares.CORE_FARE_MAX, fares.EXT_FARE_MAX, fares.COMBINED_FARE_MAX, fares.GOLD_LINE_FARE, fares.ZERO_FARE,
+  ];
+  for (const value of values) {
+    assert.equal(value.currency, "THB");
+    assert.ok(value.source.id && value.source.title);
+    assert.match(value.recordedAt, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(value.effectiveFrom === null || /^\d{4}-\d{2}-\d{2}$/.test(value.effectiveFrom));
+    assert.notEqual(value.accuracy, "verified");
+    assert.equal(value.verifiedAt, null);
+  }
+});
+
+test("legacy Green BTS prices remain, with honest approximate labels", () => {
+  const result = calculateFare(getStationByCode("E6"), getStationByCode("E13"));
+  assert.equal(result.fare, 47);
+  assert.equal(result.exact, false);
+  assert.equal(result.pricing.approximate, true);
+  const historical = calculateFare(getStationByCode("E1"), getStationByCode("E2"));
+  assert.equal(historical.fare, 17);
+  assert.equal(historical.exact, false);
+  assert.equal(historical.pricing.legs[0].values[0].accuracy, "historical");
+});
+
+test("Gold and Green tickets are added separately, without a global cap", () => {
+  for (const [origin, destination, expected] of [["G2", "E4", 63], ["E4", "G2", 63], ["G3", "N24", 81]]) {
+    const result = calculateFare(getStationByCode(origin), getStationByCode(destination));
+    assert.equal(result.fare, expected);
+    assert.equal(result.pricing.legs.length, 2);
+    assert.equal(result.fare, result.pricing.legs.reduce((sum, leg) => sum + leg.amount, 0));
+    assert.deepEqual(new Set(result.pricing.legs.map((leg) => leg.fareSystem)), new Set(["bts-green", "bts-gold"]));
+  }
+});
+
+test("cross-operator totals add known tickets and retain unknown fares", () => {
+  const known = { operator: "bts", fareSystem: "bts-green", fromCode: "E1", toCode: "E2", amount: 17, values: [fares.CORE_FARE_BY_STATIONS[1]] };
+  const other = { ...known, operator: "bem", fareSystem: "mrt-bem", fromCode: "TEST1", toCode: "TEST2", amount: 17 };
+  assert.equal(sumFareLegs([known, other]).amount, 34);
+  const incomplete = sumFareLegs([known, { ...other, amount: null, values: [] }]);
+  assert.equal(incomplete.amount, null);
+  assert.equal(incomplete.complete, false);
+  assert.equal(sumFareLegs([]).amount, null);
+  assert.throws(() => sumFareLegs([{ ...known, amount: -1 }]));
+  assert.throws(() => sumFareLegs([{ ...known, values: [] }]));
+  assert.throws(() => sumFareLegs([{ ...known, values: [{ ...known.values[0], accuracy: "verified", verifiedAt: null }] }]));
+});
+
+test("content URLs validate codes and provide equivalent EN/RU paths", () => {
+  assert.equal(getRouteContent("w1-e6").pair, "W1-E6");
+  for (const pair of ["W1-W1", "W1-NOTASTATION", "W1-E6-extra", "<script>"]) assert.equal(getRouteContent(pair), null);
+  assert.equal(sitePath("en", "/stations/W1"), "/stations/W1");
+  assert.equal(sitePath("ru", "/stations/W1"), "/ru/stations/W1");
+  assert.equal(sitePath("ru"), "/ru");
+  assert.deepEqual(Object.keys(translations.en).sort(), Object.keys(translations.ru).sort());
+  assert.equal(pageMetadata("ru", "/stations/W1", "test", "test", true).robots.index, false);
 });

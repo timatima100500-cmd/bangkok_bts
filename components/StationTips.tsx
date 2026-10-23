@@ -28,12 +28,12 @@ export default function StationTips({ from, to }: { from: Station; to: Station }
             <li key={attraction.id} className="tip-item">
               <p className="mb-1 flex items-center gap-2 text-xs font-semibold text-muted">
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: station.color }} aria-hidden />
-                {station.code} · {lang === "th" ? station.nameTh : station.nameEn}
+                {station.code} · {lang === "ru" ? station.nameRu : station.nameEn}
               </p>
               <p className="text-sm leading-relaxed">
                 {t("stationTip")
                   .replace("{place}", attraction.name[lang])
-                  .replace("{station}", lang === "th" ? station.nameTh : station.nameEn)}
+                  .replace("{station}", lang === "ru" ? station.nameRu : station.nameEn)}
               </p>
             </li>
           ))}

@@ -1,6 +1,8 @@
+import type { MetroStation } from "@/data/transit";
+
 export type BTSLine = "sukhumvit" | "silom" | "gold";
 
-export interface Station {
+export interface Station extends MetroStation {
   id: string;
   code: string;
   nameEn: string;
@@ -46,6 +48,10 @@ const station = (
   lng,
   line,
   color: LINE_COLORS[line],
+  operator: "bts",
+  operatorType: "bts",
+  fareSystem: line === "gold" ? "bts-gold" : "bts-green",
+  coordinateStatus: "unverified",
 });
 
 /**

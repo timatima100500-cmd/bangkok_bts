@@ -1,12 +1,14 @@
 "use client";
 
 import { useLang } from "@/components/LanguageProvider";
-import type { Lang } from "@/lib/i18n";
+import { usePathname } from "next/navigation";
 
-const OPTIONS: Lang[] = ["en", "th"];
+const OPTIONS = ["en", "ru"] as const;
 
 export default function LanguageToggle() {
-  const { lang, setLang } = useLang();
+  const { lang } = useLang();
+  const pathname = usePathname();
+  const basePath = pathname.replace(/^\/ru(?=\/|$)/, "") || "/";
 
   return (
     <div
@@ -15,15 +17,15 @@ export default function LanguageToggle() {
       aria-label="Language"
     >
       {OPTIONS.map((option) => (
-        <button
+        <a
           key={option}
-          type="button"
-          onClick={() => setLang(option)}
-          aria-pressed={lang === option}
-          className="segment min-w-11 uppercase"
+          href={option === "ru" ? `/ru${basePath === "/" ? "" : basePath}` : basePath}
+          hrefLang={option}
+          aria-current={lang === option ? "page" : undefined}
+          className="segment flex min-w-11 items-center justify-center uppercase"
         >
           {option}
-        </button>
+        </a>
       ))}
     </div>
   );

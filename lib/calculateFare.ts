@@ -6,7 +6,9 @@ import {
   EXT_FARE_MAX,
   COMBINED_FARE_MAX,
   GOLD_LINE_FARE,
+  ZERO_FARE,
 } from "@/data/fares";
+import { sumFareLegs, type FareValue, type JourneyFare } from "@/lib/fareModel";
 import {
   STATIONS,
   STATIONS_BY_LINE,
@@ -15,7 +17,7 @@ import {
 } from "@/data/stations";
 
 /**
- * BMA extension stations, distance-fared since 2025-11-01:
+ * Extension station groups used by the retained legacy model:
  * - Mo Chit–Khu Khot: N9–N24
  * - On Nut–Kheha: E10–E23
  * - Wongwian Yai–Bang Wa: S9–S12
@@ -103,8 +105,9 @@ export interface FareResult {
   to: Station;
   /** Price in THB */
   fare: number;
-  /** True when the value came from FARE_MATRIX, false when approximated */
+  /** Only true for a currently verified fare, not merely a historical matrix entry. */
   exact: boolean;
+  pricing: JourneyFare;
   /** Estimated travel time in minutes */
   minutes: number;
   /** Number of station-to-station hops */
@@ -193,14 +196,14 @@ export function calculateFare(from: Station, to: Station): FareResult {
     coreStops === 0
       ? 0
       : coreStops >= 8
-        ? CORE_FARE_MAX
-        : (CORE_FARE_BY_STATIONS[coreStops] ?? CORE_FARE_MAX);
+        ? CORE_FARE_MAX.amount
+        : (CORE_FARE_BY_STATIONS[coreStops] ?? CORE_FARE_MAX).amount;
   const extensionFare =
     extensionStops === 0
       ? 0
       : Math.min(
-          EXT_FARE_MAX,
-          EXT_FARE_BY_STATIONS[extensionStops] ?? EXT_FARE_MAX,
+          EXT_FARE_MAX.amount,
+          (EXT_FARE_BY_STATIONS[extensionStops] ?? EXT_FARE_MAX).amount,
         );
 
   const lines: BTSLine[] = [];
@@ -211,19 +214,48 @@ export function calculateFare(from: Station, to: Station): FareResult {
   const exactFare =
     FARE_MATRIX[from.code]?.[to.code] ?? FARE_MATRIX[to.code]?.[from.code];
 
-  // Gold Line standalone trips use its flat fare; mixed journeys use the
-  // regular zone model with the Gold leg counted as core stops.
+  // Gold standalone trips use the retained flat-fare estimate. Mixed journeys
+  // are split into separate ticketed legs below.
   const isGoldOnly = lines.length === 1 && lines[0] === "gold";
+
+  let pricing: JourneyFare;
+  if (lines.includes("gold") && !isGoldOnly) {
+    // Gold requires its own ticket even though BTSC operates both services.
+    // Split at paid-system boundaries; no global BTS cap across separate tickets.
+    const segments: Station[][] = [];
+    for (const station of path) {
+      const last = segments[segments.length - 1];
+      if (!last || last[0].fareSystem !== station.fareSystem) segments.push([station]);
+      else last.push(station);
+    }
+    const legs = segments.filter((segment) => segment.length > 1).flatMap((segment) =>
+      calculateFare(segment[0], segment[segment.length - 1]).pricing.legs,
+    );
+    pricing = sumFareLegs(legs.length ? legs : [{
+      operator: from.operator, fareSystem: from.fareSystem,
+      fromCode: from.code, toCode: to.code, amount: 0, values: [ZERO_FARE],
+    }]);
+  } else {
+    const values: FareValue[] = exactFare ? [exactFare] : isGoldOnly ? [GOLD_LINE_FARE] : [
+      ...(coreStops ? [CORE_FARE_BY_STATIONS[coreStops] ?? CORE_FARE_MAX] : []),
+      ...(extensionStops ? [EXT_FARE_BY_STATIONS[extensionStops] ?? EXT_FARE_MAX] : []),
+      ...(coreFare + extensionFare > COMBINED_FARE_MAX.amount ? [COMBINED_FARE_MAX] : []),
+    ];
+    const fare = exactFare?.amount ?? (isGoldOnly ? GOLD_LINE_FARE.amount
+      : Math.min(COMBINED_FARE_MAX.amount, coreFare + extensionFare));
+    pricing = sumFareLegs([{
+      operator: from.operator, fareSystem: from.fareSystem,
+      fromCode: from.code, toCode: to.code, amount: fare,
+      values: values.length ? values : [ZERO_FARE],
+    }]);
+  }
 
   return {
     from,
     to,
-    fare:
-      exactFare ??
-      (isGoldOnly
-        ? GOLD_LINE_FARE
-        : Math.min(COMBINED_FARE_MAX, coreFare + extensionFare)),
-    exact: exactFare !== undefined,
+    fare: pricing.amount!,
+    exact: !pricing.approximate,
+    pricing,
     minutes: Math.round(stops * MINUTES_PER_STOP + transfers * MINUTES_PER_TRANSFER),
     stops,
     transfers,

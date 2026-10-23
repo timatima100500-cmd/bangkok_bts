@@ -10,18 +10,20 @@ import {
   type FareResult,
 } from "@/lib/calculateFare";
 import type { TKey } from "@/lib/i18n";
-import { playSuccessChime } from "@/lib/sound";
+import FareDetails from "@/components/FareDetails";
+import Link from "next/link";
+import { sitePath, siteCopy } from "@/lib/site";
 import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
 import { LINE_LABEL_KEYS } from "@/lib/i18n";
 
-export default function Home() {
+export default function FareCalculator() {
   const { lang, t } = useLang();
   const [from, setFrom] = useState<Station | null>(null);
   const [to, setTo] = useState<Station | null>(null);
   const [result, setResult] = useState<FareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const nameOf = (s: Station) => (lang === "th" ? s.nameTh : s.nameEn);
+  const nameOf = (s: Station) => (lang === "ru" ? s.nameRu : s.nameEn);
   const lineName = (line: BTSLine) => t(LINE_LABEL_KEYS[line]);
 
   function runCalculation(
@@ -53,7 +55,6 @@ export default function Home() {
     }
     const next = runCalculation(from, to);
     setResult(next);
-    if (next) playSuccessChime();
   }
 
   function handleSwap() {
@@ -64,11 +65,12 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-5 pb-4">
+    <div id="calculator" className="mx-auto w-full max-w-[430px] space-y-5 pb-4">
       <div className="pt-7 pb-1">
         <p className="eyebrow mb-2">BTS Skytrain</p>
-        <h1 className="text-[30px] font-semibold leading-tight tracking-tight">{t("whereTo")}</h1>
+        <h2 className="text-[30px] font-semibold leading-tight tracking-tight">{t("whereTo")}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">{t("journeyIntro")}</p>
+        <p className="mt-2 text-xs text-muted">{siteCopy[lang].toolScope}</p>
       </div>
 
       <section className="panel space-y-4" aria-label={t("journey")}>
@@ -154,7 +156,8 @@ export default function Home() {
                 <p className="mt-1 text-xs text-muted">{result.transfers === 1 ? t("transfer") : t("transfers")}</p>
               </div>
             </div>
-            {!result.exact && <p className="text-xs leading-relaxed text-muted">{t("estimate")}</p>}
+            <FareDetails pricing={result.pricing} lang={lang} />
+            <Link className="inline-block py-2 text-sm font-medium text-accent underline" href={sitePath(lang, `/routes/${result.from.code}-${result.to.code}`)}>{siteCopy[lang].route} →</Link>
           </section>
         )}
       </div>

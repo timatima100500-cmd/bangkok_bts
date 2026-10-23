@@ -23,8 +23,8 @@ export default function StationSelect({
   const [line, setLine] = useState<BTSLine | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const primary = (s: Station) => (lang === "th" ? s.nameTh : s.nameEn);
-  const secondary = (s: Station) => (lang === "th" ? s.nameEn : s.nameTh);
+  const primary = (s: Station) => (lang === "ru" ? s.nameRu : s.nameEn);
+  const secondary = (s: Station) => (lang === "ru" ? s.nameEn : s.nameRu);
 
   const groups = useMemo(() => getStationGroups(query, line), [query, line]);
 

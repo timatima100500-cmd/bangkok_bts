@@ -28,32 +28,6 @@
   --panel-shadow: 0 3px 12px #00000012;
 }
 
-:root[data-design="modern"] {
-  --background: #f5f3fa;
-  --foreground: #28243c;
-  --surface: #ffffff;
-  --muted: #625d76;
-  --border: #e0dceb;
-  --accent: #6450bd;
-  --accent-contrast: #ffffff;
-  --accent-soft: #efebfc;
-  --panel-radius: 26px;
-  --control-radius: 16px;
-  --panel-shadow: 0 8px 24px #55418309;
-}
-
-:root.dark[data-design="modern"] {
-  --background: #171422;
-  --foreground: #f2effb;
-  --surface: #242032;
-  --muted: #bcb5d1;
-  --border: #423a53;
-  --accent: #c7b8ff;
-  --accent-contrast: #281f47;
-  --accent-soft: #34294d;
-  --panel-shadow: 0 8px 24px #00000016;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -76,9 +50,9 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.phone-shell {
+.site-shell {
   width: 100%;
-  max-width: 430px;
+  max-width: 960px;
   min-height: 100svh;
   margin-inline: auto;
   padding-top: env(safe-area-inset-top);
@@ -125,7 +99,7 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-.segment[aria-pressed="true"] {
+.segment[aria-pressed="true"], .segment[aria-current="page"] {
   color: var(--foreground);
   background: var(--surface);
   box-shadow: 0 1px 4px #182d3914;
@@ -229,10 +203,6 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-:root[data-design="modern"] .fare-card { background: var(--accent-soft); }
-:root[data-design="modern"] .fare-heading { border-color: color-mix(in srgb, var(--accent) 20%, transparent); }
-:root[data-design="modern"] .fare-stats { background: var(--surface); }
-
 .tip-icon {
   display: flex;
   align-items: center;
@@ -258,6 +228,7 @@ button { cursor: pointer; }
   .primary-button:hover, .primary-button:active { transform: none; }
 }
 
+a:focus-visible,
 button:focus-visible,
 input:focus-visible {
   outline: 2px solid var(--accent);
