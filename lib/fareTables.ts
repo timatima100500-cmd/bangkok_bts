@@ -1,11 +1,17 @@
 import * as bts2025 from "@/data/fares/bts/2025-11-01";
+import * as bem2026 from "@/data/fares/mrt-bem/2026-07-03";
+import * as arl2026 from "@/data/fares/arl/2026-10-23";
+import * as red2026 from "@/data/fares/srt-red/2026-10-22";
 import type { OperatorId } from "@/data/transit";
 import type { FareSource } from "@/lib/fareModel";
 
-export type FareTable = typeof bts2025;
+export type FareTable = typeof bts2025 | typeof bem2026 | typeof arl2026 | typeof red2026;
 
 const TABLES: Partial<Record<OperatorId, readonly FareTable[]>> = {
   bts: [bts2025],
+  bem: [bem2026],
+  arl: [arl2026],
+  "srt-red": [red2026],
 };
 
 function calendarDate(date: Date | string): string {
@@ -23,6 +29,11 @@ function calendarDate(date: Date | string): string {
 }
 
 /** Select the latest registered table already in effect on the requested day. */
+export function getFareTable(operator: "bts", date: Date | string): typeof bts2025;
+export function getFareTable(operator: "bem", date: Date | string): typeof bem2026;
+export function getFareTable(operator: "arl", date: Date | string): typeof arl2026;
+export function getFareTable(operator: "srt-red", date: Date | string): typeof red2026;
+export function getFareTable(operator: OperatorId, date: Date | string): FareTable;
 export function getFareTable(operator: OperatorId, date: Date | string): FareTable {
   const day = calendarDate(date);
   const tables = TABLES[operator];

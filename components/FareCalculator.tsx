@@ -12,22 +12,24 @@ import {
 import type { TKey } from "@/lib/i18n";
 import FareDetails from "@/components/FareDetails";
 import { siteCopy } from "@/lib/site";
-import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
-import { LINE_LABEL_KEYS } from "@/lib/i18n";
+import { METRO_LINE_COLORS, METRO_LINES, type MetroLineId, type MetroStation } from "@/data/transit";
 
 export default function FareCalculator() {
   const { lang, t } = useLang();
-  const [from, setFrom] = useState<Station | null>(null);
-  const [to, setTo] = useState<Station | null>(null);
+  const [from, setFrom] = useState<MetroStation | null>(null);
+  const [to, setTo] = useState<MetroStation | null>(null);
   const [result, setResult] = useState<FareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const nameOf = (s: Station) => (lang === "ru" ? s.nameRu : s.nameEn);
-  const lineName = (line: BTSLine) => t(LINE_LABEL_KEYS[line]);
+  const nameOf = (s: MetroStation) => (lang === "ru" ? s.nameRu : s.nameEn);
+  const lineName = (line: MetroLineId) => {
+    const item = METRO_LINES.find((candidate) => candidate.id === line)!;
+    return lang === "ru" ? item.nameRu : item.nameEn;
+  };
 
   function runCalculation(
-    nextFrom: Station | null,
-    nextTo: Station | null,
+    nextFrom: MetroStation | null,
+    nextTo: MetroStation | null,
   ): FareResult | null {
     if (!nextFrom || !nextTo) return null;
     setError(null);
@@ -66,7 +68,7 @@ export default function FareCalculator() {
   return (
     <div id="calculator" className="mx-auto w-full max-w-[430px] space-y-5 pb-4">
       <div className="pt-7 pb-1">
-        <p className="eyebrow mb-2">BTS Skytrain</p>
+        <p className="eyebrow mb-2">Bangkok rail</p>
         <h2 className="text-[30px] font-semibold leading-tight tracking-tight">{t("whereTo")}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">{t("journeyIntro")}</p>
         <p className="mt-2 text-xs text-muted">{siteCopy[lang].toolScope}</p>
@@ -112,9 +114,9 @@ export default function FareCalculator() {
           <section className="panel fare-card space-y-5" aria-label={t("fare")}>
             <div className="fare-heading">
               <p className="text-sm font-semibold text-muted">{t("fare")}</p>
-              <p className="fare-amount mt-2">
-                {result.fare}
-                <span className="ml-3 text-lg font-medium tracking-normal text-muted">THB</span>
+              <p className={result.fare === null ? "mt-2 text-xl font-semibold leading-snug" : "fare-amount mt-2"}>
+                {result.fare === null ? (result.stops === 0 ? (lang === "ru" ? "Только пересадка" : "Transfer only") : siteCopy[lang].unavailable) : result.fare}
+                {result.fare !== null && <span className="ml-3 text-lg font-medium tracking-normal text-muted">THB</span>}
               </p>
             </div>
 
@@ -133,7 +135,7 @@ export default function FareCalculator() {
             <div className="flex flex-wrap gap-2">
               {result.lines.map((line) => (
                 <span key={line} className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1.5 text-xs text-muted">
-                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: LINE_COLORS[line] }} aria-hidden />
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: METRO_LINE_COLORS[line] }} aria-hidden />
                   {lineName(line)}
                 </span>
               ))}
@@ -163,7 +165,7 @@ export default function FareCalculator() {
       {result ? <StationTips from={result.from} to={result.to} /> : (
         <div className="network-note">
           <div className="mb-4 flex justify-center gap-1.5" aria-hidden>
-            {Object.values(LINE_COLORS).map((color) => <span key={color} className="h-1.5 w-10 rounded-full" style={{ backgroundColor: color }} />)}
+            {Object.entries(METRO_LINE_COLORS).map(([line, color]) => <span key={line} className="h-1.5 w-10 rounded-full" style={{ backgroundColor: color }} />)}
           </div>
           <p className="text-sm font-semibold">{t("network")}</p>
           <p className="mx-auto mt-2 max-w-64 text-xs leading-relaxed text-muted">{t("networkHint")}</p>

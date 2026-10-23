@@ -1,15 +1,14 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
+import { METRO_LINE_COLORS, METRO_LINES, type MetroLineId, type MetroStation } from "@/data/transit";
 import { useLang } from "@/components/LanguageProvider";
-import { LINE_LABEL_KEYS } from "@/lib/i18n";
 import { getStationGroups, SELECTOR_LINES } from "@/lib/stationOptions";
 
 interface StationSelectProps {
   label: string;
-  value: Station | null;
-  onChange: (station: Station | null) => void;
+  value: MetroStation | null;
+  onChange: (station: MetroStation | null) => void;
 }
 
 export default function StationSelect({
@@ -20,15 +19,19 @@ export default function StationSelect({
   const { lang, t } = useLang();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [line, setLine] = useState<BTSLine | null>(null);
+  const [line, setLine] = useState<MetroLineId | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const primary = (s: Station) => (lang === "ru" ? s.nameRu : s.nameEn);
-  const secondary = (s: Station) => (lang === "ru" ? s.nameEn : s.nameRu);
+  const primary = (s: MetroStation) => (lang === "ru" ? s.nameRu : s.nameEn);
+  const secondary = (s: MetroStation) => (lang === "ru" ? s.nameEn : s.nameRu);
+  const lineName = (id: MetroLineId) => {
+    const item = METRO_LINES.find((candidate) => candidate.id === id)!;
+    return lang === "ru" ? item.nameRu : item.nameEn;
+  };
 
   const groups = useMemo(() => getStationGroups(query, line), [query, line]);
 
-  const row = (s: Station) => (
+  const row = (s: MetroStation) => (
     <>
       <span
         className="h-3 w-3 shrink-0 rounded-full"
@@ -76,11 +79,11 @@ export default function StationSelect({
                 {option && (
                   <span
                     className="h-3 w-3 shrink-0 rounded-full"
-                    style={{ backgroundColor: LINE_COLORS[option] }}
+                    style={{ backgroundColor: METRO_LINE_COLORS[option] }}
                     aria-hidden
                   />
                 )}
-                {option ? t(LINE_LABEL_KEYS[option]) : t("allLines")}
+                {option ? lineName(option) : t("allLines")}
               </button>
             ))}
           </div>
@@ -103,9 +106,9 @@ export default function StationSelect({
               <li key={group.line}>
                 <div
                   className="sticky top-0 z-10 border-b border-border bg-surface px-3 py-2 text-xs font-semibold"
-                  style={{ borderLeft: `4px solid ${LINE_COLORS[group.line]}` }}
+                  style={{ borderLeft: `4px solid ${METRO_LINE_COLORS[group.line]}` }}
                 >
-                  {t(LINE_LABEL_KEYS[group.line])}
+                  {lineName(group.line)}
                 </div>
                 <ul>
                   {group.stations.map((s) => (

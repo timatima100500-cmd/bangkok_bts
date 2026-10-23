@@ -1,10 +1,10 @@
 "use client";
 
 import { useLang } from "@/components/LanguageProvider";
-import type { Station } from "@/data/stations";
+import type { MetroStation } from "@/data/transit";
 import { getStationTips } from "@/lib/stationTips";
 
-export default function StationTips({ from, to }: { from: Station; to: Station }) {
+export default function StationTips({ from, to }: { from: MetroStation; to: MetroStation }) {
   const { lang, t } = useLang();
   const tips = getStationTips(from, to);
 

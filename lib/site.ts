@@ -16,7 +16,7 @@ export const siteCopy = {
     fareCaution: "These are historical references and calculator estimates, not a live operator quote. Check the operator before travelling.",
     draft: "Data preview: details need editorial verification before search indexing.",
     guideDraft: "Draft guide: station association is from the imported places dataset; verify the final walking route locally.",
-    home: "Home", toolScope: "The calculator currently covers BTS Sukhumvit, Silom and Gold only.",
+    home: "Home", toolScope: "BTS, MRT Blue, Airport Rail Link and SRT Red to Don Mueang. Transfers between operators use separate tickets.",
     independent: "Unofficial guide. Not affiliated with BTSC, BEM, SRT or MRTA.",
   },
   ru: {
@@ -32,7 +32,7 @@ export const siteCopy = {
     fareCaution: "Здесь используются архивные данные и расчётные оценки, а не актуальная котировка оператора. Перед поездкой уточните тариф.",
     draft: "Предварительные данные: перед индексацией нужна редакционная проверка.",
     guideDraft: "Черновик: станция указана по импортированным данным. Последний участок пути уточняйте на месте.",
-    home: "Главная", toolScope: "Калькулятор пока охватывает только линии BTS Сукхумвит, Силом и Gold.",
+    home: "Главная", toolScope: "BTS, MRT Blue, Airport Rail Link и SRT Red до Don Mueang. При пересадке между операторами билеты считаются отдельно.",
     independent: "Неофициальный гид. Не связан с BTSC, BEM, SRT и MRTA.",
   },
 } as const;

@@ -14,7 +14,7 @@ export default function DirectoryPage({ lang, section }: { lang: Lang; section: 
     {section === "stations" && METRO_LINES.map((line) => (
       <section key={line.id} className="panel space-y-3">
         <h2 className="border-l-4 pl-3 text-lg font-semibold" style={{ borderColor: line.color }}>{lang === "ru" ? line.nameRu : line.nameEn}</h2>
-        <p className="text-sm text-muted">{line.dataStatus === "scaffold" ? c.scaffold : c.available}</p>
+        <p className="text-sm text-muted">{line.dataStatus === "scaffold" ? c.scaffold : line.dataStatus === "bts-legacy" ? c.available : c.draft}</p>
         {line.dataStatus === "scaffold" ? <a href={line.referenceUrl} className="inline-block py-2 text-sm text-accent underline">{c.operator} →</a> : (
           <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {METRO_STATIONS_BY_LINE[line.id].map((station) => <li key={station.id}><Link className="block py-2 text-sm text-accent underline" href={sitePath(lang, `/stations/${station.code}`)}>{station.code} · {stationName(station, lang)}</Link></li>)}

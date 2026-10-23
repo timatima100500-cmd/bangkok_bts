@@ -1,9 +1,8 @@
 import { getFareTable } from "@/lib/fareTables";
 import { sumFareLegs, type FareValue, type JourneyFare } from "@/lib/fareModel";
+import { METRO_STATIONS, METRO_STATIONS_BY_LINE } from "@/data/metroStations";
+import type { MetroLineId, MetroStation } from "@/data/transit";
 import {
-  STATIONS,
-  STATIONS_BY_LINE,
-  type BTSLine,
   type Station,
 } from "@/data/stations";
 
@@ -27,6 +26,8 @@ function range(from: number, to: number): number[] {
 /** Average travel time per stop / per transfer, in minutes. */
 const MINUTES_PER_STOP = 2.5;
 const MINUTES_PER_TRANSFER = 4;
+// TODO(verify): measure actual inter-operator walking and ticketing time on site.
+export const MINUTES_PER_INTEROP_TRANSFER = 8;
 
 export type FareErrorCode = "sameStation" | "noRoute";
 
@@ -40,19 +41,22 @@ export class FareError extends Error {
 
 type NodeKey = string; // `${line}:${code}` — unique per line-station entry
 
-const nodeKey = (s: Station): NodeKey => `${s.line}:${s.code}`;
+const nodeKey = (s: MetroStation): NodeKey => `${s.line}:${s.code}`;
 
-const stationByKey = new Map<NodeKey, Station>(
-  STATIONS.map((s) => [nodeKey(s), s]),
+const stationByKey = new Map<NodeKey, MetroStation>(
+  METRO_STATIONS.map((s) => [nodeKey(s), s]),
 );
 
 /** Physical interchanges that use different codes across lines. */
-const INTERCHANGE_CODE_PAIRS: Array<[string, string]> = [["S7", "G1"]];
+const INTERCHANGE_CODE_PAIRS: Array<[string, string]> = [
+  ["S7", "G1"], ["E4", "BL22"], ["S2", "BL26"], ["N8", "BL13"],
+  ["N2", "A8"], ["A6", "BL21"], ["S12", "BL34"], ["BL11", "RN01"],
+];
 
 function buildGraph(): Map<NodeKey, Set<NodeKey>> {
   const graph = new Map<NodeKey, Set<NodeKey>>();
 
-  const addEdge = (a: Station, b: Station) => {
+  const addEdge = (a: MetroStation, b: MetroStation) => {
     const ka = nodeKey(a);
     const kb = nodeKey(b);
     if (!graph.has(ka)) graph.set(ka, new Set());
@@ -62,15 +66,19 @@ function buildGraph(): Map<NodeKey, Set<NodeKey>> {
   };
 
   // Consecutive stations within each line (lists are in travel order).
-  for (const list of Object.values(STATIONS_BY_LINE)) {
+  for (const list of Object.values(METRO_STATIONS_BY_LINE)) {
     for (let i = 0; i < list.length - 1; i++) {
+      // Blue Line doubles back through Tha Phra (BL01) between BL33 and BL34.
+      if (list[i].code === "BL33" && list[i + 1].code === "BL34") continue;
       addEdge(list[i], list[i + 1]);
     }
   }
+  const blue = METRO_STATIONS_BY_LINE["mrt-blue"];
+  for (const code of ["BL33", "BL34"]) addEdge(blue[0], blue.find((station) => station.code === code)!);
 
   // Same code on two lines = same physical station (e.g. CEN/Siam).
-  const byCode = new Map<string, Station[]>();
-  for (const s of STATIONS) {
+  const byCode = new Map<string, MetroStation[]>();
+  for (const s of METRO_STATIONS) {
     const list = byCode.get(s.code) ?? [];
     list.push(s);
     byCode.set(s.code, list);
@@ -92,10 +100,10 @@ function buildGraph(): Map<NodeKey, Set<NodeKey>> {
 const GRAPH = buildGraph();
 
 export interface FareResult {
-  from: Station;
-  to: Station;
+  from: MetroStation;
+  to: MetroStation;
   /** Price in THB */
-  fare: number;
+  fare: number | null;
   /** Only true for a currently verified fare, not merely a historical matrix entry. */
   exact: boolean;
   pricing: JourneyFare;
@@ -106,15 +114,15 @@ export interface FareResult {
   /** Number of line changes */
   transfers: number;
   /** Lines used, in travel order */
-  lines: BTSLine[];
+  lines: MetroLineId[];
   /** Full station-by-station path */
-  path: Station[];
+  path: MetroStation[];
   /** Stops inside the core concession / extensions */
   zoneStops: { core: number; extension: number };
 }
 
 /** True when two nodes are the same physical station (an interchange hop). */
-function isInterchangeEdge(a: Station, b: Station): boolean {
+function isInterchangeEdge(a: MetroStation, b: MetroStation): boolean {
   if (a.code === b.code) return true;
   return INTERCHANGE_CODE_PAIRS.some(
     ([x, y]) =>
@@ -123,7 +131,7 @@ function isInterchangeEdge(a: Station, b: Station): boolean {
 }
 
 /** BFS shortest path by hop count between two line-station nodes. */
-function findPath(from: Station, to: Station): Station[] | null {
+function findPath(from: MetroStation, to: MetroStation): MetroStation[] | null {
   const start = nodeKey(from);
   const goal = nodeKey(to);
 
@@ -136,6 +144,7 @@ function findPath(from: Station, to: Station): Station[] | null {
     if (current === goal) break;
 
     for (const next of GRAPH.get(current) ?? []) {
+      if (from.operator === "bts" && to.operator === "bts" && stationByKey.get(next)?.operator !== "bts") continue;
       if (visited.has(next)) continue;
       visited.add(next);
       prev.set(next, current);
@@ -153,10 +162,10 @@ function findPath(from: Station, to: Station): Station[] | null {
 
   return nodePath
     .map((key) => stationByKey.get(key))
-    .filter((s): s is Station => s !== undefined);
+    .filter((s): s is MetroStation => s !== undefined);
 }
 
-export function calculateFare(from: Station, to: Station): FareResult {
+export function calculateFare(from: MetroStation, to: MetroStation): FareResult {
   if (from.code === to.code && from.line === to.line) {
     throw new FareError("sameStation", "Origin and destination are the same station");
   }
@@ -164,6 +173,10 @@ export function calculateFare(from: Station, to: Station): FareResult {
   const path = findPath(from, to);
   if (!path || path.length < 2) {
     throw new FareError("noRoute", "No route found between these stations");
+  }
+
+  if (path.some((station) => station.operator !== "bts")) {
+    return calculateMixedFare(from, to, path);
   }
 
   const {
@@ -208,7 +221,7 @@ export function calculateFare(from: Station, to: Station): FareResult {
           (EXT_FARE_BY_STATIONS[extensionStops] ?? EXT_FARE_MAX).amount,
         );
 
-  const lines: BTSLine[] = [];
+  const lines: MetroLineId[] = [];
   for (const s of path) {
     if (lines[lines.length - 1] !== s.line) lines.push(s.line);
   }
@@ -224,7 +237,7 @@ export function calculateFare(from: Station, to: Station): FareResult {
   if (lines.includes("gold") && !isGoldOnly) {
     // Gold requires its own ticket even though BTSC operates both services.
     // Split at paid-system boundaries; no global BTS cap across separate tickets.
-    const segments: Station[][] = [];
+    const segments: MetroStation[][] = [];
     for (const station of path) {
       const last = segments[segments.length - 1];
       if (!last || last[0].fareSystem !== station.fareSystem) segments.push([station]);
@@ -264,5 +277,44 @@ export function calculateFare(from: Station, to: Station): FareResult {
     lines,
     path,
     zoneStops: { core: coreStops, extension: extensionStops },
+  };
+}
+
+function calculateMixedFare(from: MetroStation, to: MetroStation, path: MetroStation[]): FareResult {
+  const segments: MetroStation[][] = [];
+  for (const station of path) {
+    const last = segments[segments.length - 1];
+    if (!last || last[0].fareSystem !== station.fareSystem) segments.push([station]);
+    else last.push(station);
+  }
+  const zoneStops = { core: 0, extension: 0 };
+  const legs = segments.filter((segment) => segment.length > 1).flatMap((segment) => {
+    const first = segment[0];
+    const last = segment[segment.length - 1];
+    if (first.operator === "bts") {
+      const bts = calculateFare(first as Station, last as Station);
+      zoneStops.core += bts.zoneStops.core;
+      zoneStops.extension += bts.zoneStops.extension;
+      return bts.pricing.legs;
+    }
+    const stops = segment.length - 1;
+    const value = first.operator === "bem"
+      ? getFareTable("bem", new Date()).fareForStops(stops)
+      : first.operator === "arl"
+        ? getFareTable("arl", new Date()).fareForStops(stops)
+        : getFareTable("srt-red", new Date()).fareForPair(first.code, last.code);
+    return [{ operator: first.operator, fareSystem: first.fareSystem,
+      fromCode: first.code, toCode: last.code, amount: value.amount, values: [value] }];
+  });
+  const pricing = sumFareLegs(legs);
+  const stops = path.slice(0, -1).filter((station, index) => !isInterchangeEdge(station, path[index + 1])).length;
+  const transfers = path.slice(0, -1).filter((station, index) => station.line !== path[index + 1].line).length;
+  const operatorTransfers = path.slice(0, -1).filter((station, index) => station.operator !== path[index + 1].operator).length;
+  const lines: MetroLineId[] = [];
+  for (const station of path) if (lines[lines.length - 1] !== station.line) lines.push(station.line);
+  return {
+    from, to, fare: pricing.amount, exact: !pricing.approximate, pricing,
+    minutes: Math.round(stops * MINUTES_PER_STOP + (transfers - operatorTransfers) * MINUTES_PER_TRANSFER + operatorTransfers * MINUTES_PER_INTEROP_TRANSFER),
+    stops, transfers, lines, path, zoneStops,
   };
 }

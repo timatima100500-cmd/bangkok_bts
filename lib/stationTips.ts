@@ -1,13 +1,13 @@
 import { getAttractionsByStationId, type Attraction } from "@/data/attractions";
-import type { Station } from "@/data/stations";
+import type { MetroStation } from "@/data/transit";
 
 export interface StationTip {
-  station: Station;
+  station: MetroStation;
   attraction: Attraction;
 }
 
 /** Destination first, then origin; never invent points for stations with no data. */
-export function getStationTips(from: Station, to: Station): StationTip[] {
+export function getStationTips(from: MetroStation, to: MetroStation): StationTip[] {
   const seen = new Set<string>();
   return [to, from].flatMap((station) =>
     getAttractionsByStationId(station.code).flatMap((attraction) => {
