@@ -7,6 +7,7 @@ English and Russian static website with a BTS fare calculator.
 - Routes between stations are calculated inside the home page tool; there are no route pages.
 - Draft station and guide pages have `noindex` and are excluded from the sitemap.
 - Fare data includes historical references and approximate estimates. They are not live operator quotes.
+- `/fares/` and `/ru/fares/` show the versioned BTS table; `/sources/` and `/ru/sources/` list its registered sources. These pages remain `noindex` pending verification.
 
 Use Node.js 24. Run `npm run lint`, `npm test`, and `npm run build`. The build creates the static `out/` directory and downloads the existing Google Fonts.
 

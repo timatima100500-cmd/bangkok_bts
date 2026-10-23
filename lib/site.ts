@@ -5,7 +5,7 @@ import type { MetroStation } from "@/data/transit";
 export const siteCopy = {
   en: {
     title: "Bangkok Metro Guide", intro: "Stations and practical travel guides in English and Russian.",
-    calculator: "BTS calculator", stations: "Stations", guides: "Travel guides",
+    calculator: "BTS calculator", fares: "Fares", stations: "Stations", guides: "Travel guides",
     lines: "Rail networks", scaffold: "Station and fare data in preparation", available: "BTS data available; fares are estimates",
     station: "Station", operator: "Operator / service", neighbours: "Adjacent stations", nearby: "Places to explore",
     coordinates: "Coordinates", unverifiedCoordinates: "Legacy coordinates are unverified and are not published as navigation points.",
@@ -21,7 +21,7 @@ export const siteCopy = {
   },
   ru: {
     title: "Метро Бангкока", intro: "Станции и полезные советы для поездок на английском и русском.",
-    calculator: "Калькулятор BTS", stations: "Станции", guides: "Как доехать",
+    calculator: "Калькулятор BTS", fares: "Тарифы", stations: "Станции", guides: "Как доехать",
     lines: "Линии и сети", scaffold: "Данные станций и тарифов готовятся", available: "Данные BTS доступны; цены приблизительные",
     station: "Станция", operator: "Оператор / сеть", neighbours: "Соседние станции", nearby: "Что посмотреть",
     coordinates: "Координаты", unverifiedCoordinates: "Старые координаты не проверены и не публикуются как точки для навигации.",

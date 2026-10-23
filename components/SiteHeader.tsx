@@ -26,6 +26,7 @@ export default function SiteHeader() {
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <nav className="flex flex-wrap gap-3 text-sm" aria-label={lang === "ru" ? "Навигация" : "Navigation"}>
           <Link className="py-2 text-accent" href={`${sitePath(lang)}#calculator`}>BTS</Link>
+          <Link className="py-2 text-accent" href={sitePath(lang, "/fares")}>{c.fares}</Link>
           <Link className="py-2 text-accent" href={sitePath(lang, "/stations")}>{c.stations}</Link>
           <Link className="py-2 text-accent" href={sitePath(lang, "/guides")}>{c.guides}</Link>
         </nav>
