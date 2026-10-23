@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getMetroStationByCode, METRO_STATIONS, METRO_STATIONS_BY_LINE } from "@/data/metroStations";
 import { METRO_LINES } from "@/data/transit";
 import { getAttractionsByStationId } from "@/data/attractions";
@@ -8,13 +8,12 @@ import type { Lang } from "@/lib/i18n";
 
 export function stationMetadata(code: string, lang: Lang) {
   const station = getMetroStationByCode(code);
-  return station ? pageMetadata(lang, `/stations/${station.code}`, `${stationName(station, lang)} (${station.code})`, `${siteCopy[lang].station}: ${stationName(station, lang)}. ${siteCopy[lang].neighbours}, ${siteCopy[lang].routes}.`, true) : {};
+  return station ? pageMetadata(lang, `/stations/${station.code}`, `${stationName(station, lang)} (${station.code})`, `${siteCopy[lang].station}: ${stationName(station, lang)}. ${siteCopy[lang].neighbours}.`, true) : {};
 }
 
 export default function StationPage({ code, lang }: { code: string; lang: Lang }) {
   const station = getMetroStationByCode(code);
   if (!station) notFound();
-  if (code !== station.code) permanentRedirect(sitePath(lang, `/stations/${station.code}`));
   const c = siteCopy[lang];
   const memberships = METRO_STATIONS.filter((candidate) => candidate.code === station.code);
   const attractions = getAttractionsByStationId(station.code);
@@ -43,9 +42,5 @@ export default function StationPage({ code, lang }: { code: string; lang: Lang }
       <h2 className="text-lg font-semibold">{c.nearby}</h2>
       <ul className="space-y-2">{attractions.map((attraction) => <li key={attraction.id}>{attraction.name[lang]}</li>)}</ul>
     </section>}
-    <section className="panel space-y-3">
-      <h2 className="text-lg font-semibold">{c.routes}</h2>
-      <ul>{["CEN", "E4", "E6"].filter((target) => target !== station.code).map((target) => <li key={target}><Link className="inline-block py-2 text-accent underline" href={sitePath(lang, `/routes/${station.code}-${target}`)}>{stationName(station, lang)} → {stationName(getMetroStationByCode(target)!, lang)}</Link></li>)}</ul>
-    </section>
   </article>;
 }

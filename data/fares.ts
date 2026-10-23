@@ -1,14 +1,26 @@
 import type { FareSource, FareValue } from "@/lib/fareModel";
 
 /** Legacy values are retained for compatibility, not presented as live verified prices. */
-export const FARE_SOURCES: Record<"archive" | "model", FareSource> = {
+export const FARE_SOURCES: Record<"archive" | "model" | "extensions" | "extensionHistory" | "extensionReport", FareSource> = {
   archive: {
     id: "bts-sjt-2024", title: "BTS single journey fare chart, 2 January 2024",
-    kind: "archive", document: "reference/old-src/fare_SJT_2JAN24.docx",
+    kind: "archive",
   },
   model: {
     id: "bts-legacy-model", title: "Legacy BTS calculator estimate (not revalidated with the operator)",
     kind: "model", document: "data/fares.ts",
+  },
+  extensions: {
+    id: "bts-extensions-2025-model", title: "BTS extension fare model; 2025 change reported by The Nation",
+    kind: "model", url: "https://www.nationthailand.com/news/general/40057166",
+  },
+  extensionHistory: {
+    id: "bts-extensions-historical-context", title: "Isranews report on previous BTS fare change",
+    kind: "archive", url: "https://isranews.org/article/isranews-other-news/114071-isranews-1000-518.html",
+  },
+  extensionReport: {
+    id: "bts-extensions-standard-report", title: "The Standard report linked in the earlier fare notes; availability unverified",
+    kind: "archive", url: "https://thestandard.co/bts-green-line-extension-new-fare",
   },
 };
 
@@ -20,16 +32,18 @@ const estimate = (amount: number): FareValue => ({
   amount, currency: "THB", accuracy: "approximate", source: FARE_SOURCES.model,
   effectiveFrom: null, recordedAt: "2026-10-23", verifiedAt: null,
 });
+const extensionEstimate = (amount: number): FareValue => ({
+  ...estimate(amount), source: FARE_SOURCES.extensions, effectiveFrom: "2025-11-01",
+});
 
 export type FareMatrix = Record<string, Record<string, FareValue>>;
 
 export const FARE_MATRIX: FareMatrix = {
-  N8: { N24: estimate(45) },
-  E9: { E23: estimate(45) },
-  N9: { N5: estimate(45) },
-  // Core-only anchors extracted from reference/old-src/fare_SJT_2JAN24.docx.
-  // Checked in both directions against its 61-column chart (including future N6).
-  // Historical references only; current validity has not been verified.
+  N8: { N24: extensionEstimate(45) },
+  E9: { E23: extensionEstimate(45) },
+  N9: { N5: extensionEstimate(45) },
+  // Legacy core anchors from an unavailable 2024 chart; current validity is unverified.
+  // TODO(verify): find the official BTS fare table before using these as current fares.
   CEN: { E1: historical(17), E9: historical(47) },
   E1: { E2: historical(17) },
   E2: { E3: historical(17) },
@@ -60,32 +74,34 @@ export const CORE_FARE_BY_STATIONS: Readonly<Record<number, FareValue>> = {
 export const CORE_FARE_MAX = historical(47);
 
 /**
- * Legacy extension model by station count; not an official distance table.
+ * Legacy extension model by station count, anchored to the 2025-11-01 change.
+ * The linked reports do not establish these per-station amounts.
+ * TODO(verify): compare every amount with the official BTS distance table.
  * The original calibration keeps Thong Lo→Bang Na at 47 THB.
  */
 export const EXT_FARE_BY_STATIONS: Readonly<Record<number, FareValue>> = {
-  1: estimate(17),
-  2: estimate(17),
-  3: estimate(18),
-  4: estimate(19),
-  5: estimate(21),
-  6: estimate(23),
-  7: estimate(25),
-  8: estimate(27),
-  9: estimate(29),
-  10: estimate(31),
-  11: estimate(33),
-  12: estimate(35),
-  13: estimate(37),
-  14: estimate(39),
-  15: estimate(41),
-  16: estimate(43),
+  1: extensionEstimate(17),
+  2: extensionEstimate(17),
+  3: extensionEstimate(18),
+  4: extensionEstimate(19),
+  5: extensionEstimate(21),
+  6: extensionEstimate(23),
+  7: extensionEstimate(25),
+  8: extensionEstimate(27),
+  9: extensionEstimate(29),
+  10: extensionEstimate(31),
+  11: extensionEstimate(33),
+  12: extensionEstimate(35),
+  13: extensionEstimate(37),
+  14: extensionEstimate(39),
+  15: extensionEstimate(41),
+  16: extensionEstimate(43),
 };
 
-export const EXT_FARE_MAX = estimate(45);
+export const EXT_FARE_MAX = extensionEstimate(45);
 
 /** Hard cap for any single journey crossing core + extensions. */
-export const COMBINED_FARE_MAX = estimate(65);
+export const COMBINED_FARE_MAX = extensionEstimate(65);
 
 /** Legacy Gold Line flat-fare estimate; current official validity is unverified. */
 export const GOLD_LINE_FARE = estimate(16);
@@ -95,6 +111,7 @@ export const ZERO_FARE = estimate(0);
 export const FARE_NOTES = {
   currency: "THB",
   approximate: true,
+  effective: "2025-11-01",
   recordedAt: "2026-10-23",
   sources: Object.values(FARE_SOURCES),
 };

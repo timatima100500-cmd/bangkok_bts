@@ -11,8 +11,7 @@ import {
 } from "@/lib/calculateFare";
 import type { TKey } from "@/lib/i18n";
 import FareDetails from "@/components/FareDetails";
-import Link from "next/link";
-import { sitePath, siteCopy } from "@/lib/site";
+import { siteCopy } from "@/lib/site";
 import { LINE_COLORS, type BTSLine, type Station } from "@/data/stations";
 import { LINE_LABEL_KEYS } from "@/lib/i18n";
 
@@ -157,7 +156,6 @@ export default function FareCalculator() {
               </div>
             </div>
             <FareDetails pricing={result.pricing} lang={lang} />
-            <Link className="inline-block py-2 text-sm font-medium text-accent underline" href={sitePath(lang, `/routes/${result.from.code}-${result.to.code}`)}>{siteCopy[lang].route} →</Link>
           </section>
         )}
       </div>

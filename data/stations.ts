@@ -56,7 +56,7 @@ const station = (
 
 /**
  * BTS Skytrain — Green Line (Sukhumvit + Silom) and Gold Line.
- * Coordinates and zh/ru names imported from reference/old-src/src/data/stations.ts.
+ * Coordinates and zh/ru names imported from the previous project's dataset.
  * Legacy coordinates are unverified (some extensions use interpolated positions).
  * Gold Line coordinates: https://www.mapofthailand.com/transit/bts/G1 (also G2, G3).
  * Gold Line translations added locally.

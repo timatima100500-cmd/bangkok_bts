@@ -21,7 +21,6 @@ export default function GuidePage({ slug, lang }: { slug: string; lang: Lang }) 
     <p className="leading-relaxed">{guide.text[lang]}</p>
     <p className="rounded-xl border border-border p-4 text-sm text-muted">{c.guideDraft}</p>
     <Link className="block py-2 text-accent underline" href={sitePath(lang, `/stations/${station.code}`)}>{c.station}: {stationName(station, lang)} ({station.code}) →</Link>
-    <Link className="block py-2 text-accent underline" href={sitePath(lang, `/routes/W1-${station.code}`)}>{c.route}: National Stadium → {stationName(station, lang)}</Link>
     <Link className="block py-2 text-accent underline" href={`${sitePath(lang)}#calculator`}>{c.calculator} →</Link>
   </article>;
 }

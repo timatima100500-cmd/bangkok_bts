@@ -4,12 +4,8 @@ import { METRO_LINES, type MetroLineId, type MetroStation } from "@/data/transit
 /** Fill each scaffold with sourced stations before adding it to a route graph. */
 export const ADDITIONAL_STATIONS: Record<Exclude<MetroLineId, "sukhumvit" | "silom" | "gold">, MetroStation[]> = {
   "mrt-blue": [],
-  "mrt-purple": [],
-  "mrt-yellow": [],
-  "mrt-pink": [],
   "airport-rail-link": [],
   "red-dark": [],
-  "red-light": [],
 };
 
 export const METRO_STATIONS: MetroStation[] = [...STATIONS, ...Object.values(ADDITIONAL_STATIONS).flat()];

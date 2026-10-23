@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { METRO_LINES } from "@/data/transit";
 import { METRO_STATIONS_BY_LINE } from "@/data/metroStations";
-import { GUIDES, FEATURED_ROUTES } from "@/data/guides";
-import { getRouteContent } from "@/lib/content";
+import { GUIDES } from "@/data/guides";
 import { siteCopy, sitePath, stationName } from "@/lib/site";
 import type { Lang } from "@/lib/i18n";
 
-export type DirectorySection = "stations" | "routes" | "guides";
+export type DirectorySection = "stations" | "guides";
 
 export default function DirectoryPage({ lang, section }: { lang: Lang; section: DirectorySection }) {
   const c = siteCopy[lang];
@@ -23,10 +22,6 @@ export default function DirectoryPage({ lang, section }: { lang: Lang; section: 
         )}
       </section>
     ))}
-    {section === "routes" && <ul className="panel space-y-3">{FEATURED_ROUTES.map((pair) => {
-      const route = getRouteContent(pair)!;
-      return <li key={pair}><Link className="block py-2 text-accent underline" href={sitePath(lang, `/routes/${pair}`)}>{stationName(route.from, lang)} → {stationName(route.to, lang)}</Link></li>;
-    })}</ul>}
     {section === "guides" && <ul className="panel space-y-3">{GUIDES.map((guide) => <li key={guide.slug}><Link className="block py-2 text-accent underline" href={sitePath(lang, `/guides/${guide.slug}`)}>{guide.title[lang]}</Link></li>)}</ul>}
   </div>;
 }

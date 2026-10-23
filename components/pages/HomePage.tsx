@@ -11,7 +11,7 @@ export default function HomePage({ lang }: { lang: Lang }) {
       <p className="leading-relaxed text-muted">{c.intro}</p>
     </header>
     <nav className="flex flex-wrap gap-3">
-      {["stations", "routes", "guides"].map((section) => <Link key={section} className="control-button px-4 text-sm" href={sitePath(lang, `/${section}`)}>{c[section as "stations" | "routes" | "guides"]}</Link>)}
+      {(["stations", "guides"] as const).map((section) => <Link key={section} className="control-button px-4 text-sm" href={sitePath(lang, `/${section}`)}>{c[section]}</Link>)}
     </nav>
     <FareCalculator />
   </div>;

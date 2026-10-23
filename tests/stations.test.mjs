@@ -21,8 +21,8 @@ const { METRO_LINES } = await import("../data/transit.ts");
 const { ADDITIONAL_STATIONS, METRO_STATIONS } = await import("../data/metroStations.ts");
 const { sumFareLegs } = await import("../lib/fareModel.ts");
 const fares = await import("../data/fares.ts");
-const { getRouteContent } = await import("../lib/content.ts");
 const { sitePath, pageMetadata } = await import("../lib/site.ts");
+const { default: sitemap } = await import("../app/sitemap.ts");
 const { translations } = await import("../lib/i18n.ts");
 
 const silomCodes = ["W1", "CEN", ...Array.from({ length: 12 }, (_, i) => `S${i + 1}`)];
@@ -96,12 +96,13 @@ test("tips do not invent places or repeat highlights for a shared station", () =
 });
 
 test("every new network has a scaffold, without fabricated routing stations", () => {
-  for (const id of ["mrt-blue", "mrt-purple", "mrt-yellow", "mrt-pink", "airport-rail-link", "red-dark", "red-light"]) {
+  for (const id of ["mrt-blue", "airport-rail-link", "red-dark"]) {
     const line = METRO_LINES.find((candidate) => candidate.id === id);
     assert.equal(line.dataStatus, "scaffold");
     assert.ok(line.operator && line.operatorType && line.fareSystem);
     assert.deepEqual(ADDITIONAL_STATIONS[id], []);
   }
+  assert.deepEqual(METRO_LINES.map((line) => line.id), ["sukhumvit", "silom", "gold", "mrt-blue", "airport-rail-link", "red-dark"]);
   for (const station of METRO_STATIONS) {
     assert.ok(station.code && station.nameEn && station.nameRu && station.operator && station.operatorType && station.fareSystem);
     assert.equal(station.coordinateStatus, "unverified");
@@ -158,12 +159,20 @@ test("cross-operator totals add known tickets and retain unknown fares", () => {
   assert.throws(() => sumFareLegs([{ ...known, values: [{ ...known.values[0], accuracy: "verified", verifiedAt: null }] }]));
 });
 
-test("content URLs validate codes and provide equivalent EN/RU paths", () => {
-  assert.equal(getRouteContent("w1-e6").pair, "W1-E6");
-  for (const pair of ["W1-W1", "W1-NOTASTATION", "W1-E6-extra", "<script>"]) assert.equal(getRouteContent(pair), null);
+test("content URLs provide equivalent EN/RU paths", () => {
   assert.equal(sitePath("en", "/stations/W1"), "/stations/W1");
   assert.equal(sitePath("ru", "/stations/W1"), "/ru/stations/W1");
   assert.equal(sitePath("ru"), "/ru");
   assert.deepEqual(Object.keys(translations.en).sort(), Object.keys(translations.ru).sort());
   assert.equal(pageMetadata("ru", "/stations/W1", "test", "test", true).robots.index, false);
+});
+
+test("sitemap contains only indexable pages", () => {
+  const listed = sitemap().map(({ url }) => url);
+  assert.deepEqual(listed, ["https://btsguide.com/", "https://btsguide.com/ru/"]);
+  for (const [lang, path] of [["en", "/about"], ["ru", "/sources"], ["en", "/stations/W1"], ["ru", "/guides/terminal-21"]]) {
+    const metadata = pageMetadata(lang, path, "Draft", "Draft", true);
+    assert.equal(metadata.robots.index, false);
+    assert.ok(!listed.includes(metadata.alternates.canonical));
+  }
 });
