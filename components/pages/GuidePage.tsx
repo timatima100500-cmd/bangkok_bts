@@ -7,7 +7,7 @@ import type { Lang } from "@/lib/i18n";
 
 export function guideMetadata(slug: string, lang: Lang) {
   const guide = GUIDES.find((candidate) => candidate.slug === slug);
-  return guide ? pageMetadata(lang, `/guides/${slug}`, guide.title[lang], guide.text[lang], true) : {};
+  return guide ? pageMetadata(lang, `/guides/${slug}`, guide.title[lang], guide.text[lang], false) : {};
 }
 
 export default function GuidePage({ slug, lang }: { slug: string; lang: Lang }) {

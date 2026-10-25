@@ -8,7 +8,7 @@ import type { Lang } from "@/lib/i18n";
 
 export function stationMetadata(code: string, lang: Lang) {
   const station = getMetroStationByCode(code);
-  return station ? pageMetadata(lang, `/stations/${station.code}`, `${stationName(station, lang)} (${station.code})`, `${siteCopy[lang].station}: ${stationName(station, lang)}. ${siteCopy[lang].neighbours}.`, true) : {};
+  return station ? pageMetadata(lang, `/stations/${station.code}`, `${stationName(station, lang)} (${station.code})`, `${siteCopy[lang].station}: ${stationName(station, lang)}. ${siteCopy[lang].neighbours}.`, false) : {};
 }
 
 export default function StationPage({ code, lang }: { code: string; lang: Lang }) {
@@ -20,7 +20,6 @@ export default function StationPage({ code, lang }: { code: string; lang: Lang }
   return <article className="space-y-6 py-8">
     <p className="eyebrow">{c.station} · {station.code}</p>
     <h1 className="text-3xl font-semibold">{stationName(station, lang)}</h1>
-    <p className="text-sm text-muted">{c.draft}</p>
     {memberships.map((membership) => {
       const line = METRO_LINES.find((candidate) => candidate.id === membership.line)!;
       const stations = METRO_STATIONS_BY_LINE[line.id];
