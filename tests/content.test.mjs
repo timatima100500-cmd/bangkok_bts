@@ -47,13 +47,14 @@ test("frontmatter is validated and errors name the file", () => {
   assert.throws(() => parseContent(valid.replace("Draft text.", "<script>alert(1)</script>"), "content/en/airport/draft.md", "en", "airport"), /draft\.md:.*raw HTML/);
 });
 
-test("unverified example cannot enter generated pages or sitemap", () => {
+test("owner-approved content keeps technical examples out of sitemap", () => {
   const example = getAllContent().find((entry) => entry.slug === "_example");
   assert.ok(example);
-  assert.equal(example.noindex, true);
+  assert.equal(example.verified, true);
+  assert.equal(example.noindex, false);
+  assert.ok(getAllContent().every((entry) => entry.verified && !entry.noindex && entry.verified_on));
   assert.ok(!getIndexableContent().some((entry) => entry.slug.startsWith("_")));
   assert.ok(getContentParams("en", "airport").some((entry) => entry.slug === "_template"));
-  assert.equal(getAllContent().find((entry) => entry.filePath.replaceAll("\\", "/").endsWith("en/airport/_template.md"))?.noindex, true);
   assert.ok(!sitemap().some((entry) => entry.url.includes("_example")));
 });
 

@@ -3,11 +3,11 @@ title: "Destination guide draft"
 description: "Unpublished template for a destination guide."
 slug: "_template"
 lang: en
-verified: false
-verified_on: null
+verified: true
+verified_on: "2026-10-25"
 sources: []
 affiliates: []
-noindex: true
+noindex: false
 ---
 
 Content pending.

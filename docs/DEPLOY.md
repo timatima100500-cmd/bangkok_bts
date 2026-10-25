@@ -18,7 +18,7 @@ Before publishing, check the exported HTML and the canonical host. Draft pages c
 
 ## Indexing release (owner-approved, 2026-10-25)
 
-Station pages, existing guides and the `/stations/`, `/guides/`, `/fares/`, `/about/`, `/sources/` sections are now indexable in EN and RU. Fare accuracy labels remain independent of indexing. Technical `_template` and `_example` files and error pages remain `noindex`.
+Station pages, existing guides and the `/stations/`, `/guides/`, `/fares/`, `/about/`, `/sources/` sections are now indexable in EN and RU. Fare accuracy labels remain independent of indexing. Following the owner's repeated instruction, all current markdown files have `verified: true`, `noindex: false` and `verified_on: 2026-10-25`. Technical slugs beginning with `_` remain excluded from the sitemap; error pages and legacy `/get-to/` aliases remain `noindex`.
 
 Run `npm run lint`, `npm test`, `npm run build`, then `npm run test:export` before deploying. The export check confirms that every sitemap URL has an HTML file, `index, follow` and a matching canonical, and that home titles are not duplicated. The current sitemap contains 250 unique URLs.
 

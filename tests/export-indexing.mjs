@@ -19,11 +19,15 @@ test("every sitemap URL has exported, indexable HTML and a matching canonical", 
   }
 });
 
-test("home titles are not duplicated; error pages and technical examples stay noindex", () => {
+test("home titles are not duplicated; error pages and legacy aliases stay noindex", () => {
   assert.equal(readHtml("/").match(/<title>(.*?)<\/title>/)?.[1], "Bangkok Metro Guide");
   assert.equal(readHtml("/ru/").match(/<title>(.*?)<\/title>/)?.[1], "Метро Бангкока");
-  for (const pathname of ["/404/", "/ru/404/", "/airport/_template/", "/ru/airport/_template/", "/guides/_template/", "/ru/guides/_template/", "/get-to/_template/", "/ru/get-to/_template/"]) {
+  for (const pathname of ["/404/", "/ru/404/", "/get-to/_template/", "/ru/get-to/_template/"]) {
     const robots = readHtml(pathname).match(/<meta name="robots" content="([^"]+)"\s*\/>/)?.[1];
     assert.match(robots ?? "", /(?:^|,\s*)noindex(?:,|$)/, pathname);
+  }
+  for (const pathname of ["/airport/_template/", "/ru/airport/_template/", "/guides/_template/", "/ru/guides/_template/"]) {
+    const robots = readHtml(pathname).match(/<meta name="robots" content="([^"]+)"\s*\/>/)?.[1];
+    assert.equal(robots, "index, follow", pathname);
   }
 });

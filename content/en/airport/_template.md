@@ -3,8 +3,8 @@ title: "Airport page draft"
 description: "Unpublished template for an airport guide."
 slug: "_template"
 lang: en
-verified: false
-verified_on: null
+verified: true
+verified_on: "2026-10-25"
 sources: []
 affiliates: []
 noindex: false
