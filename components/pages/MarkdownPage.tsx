@@ -6,7 +6,7 @@ import { getContentEntry, type ContentCollection, type ContentLang } from "@/lib
 import { pageMetadata } from "@/lib/site";
 
 function pagePath(collection: ContentCollection, slug: string) {
-  return `/${collection === "guides" ? "get-to" : collection}/${slug}`;
+  return `/${collection}/${slug}`;
 }
 
 export function markdownMetadata(lang: ContentLang, collection: "airport" | "guides", slug: string) {

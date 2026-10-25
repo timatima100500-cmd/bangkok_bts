@@ -256,9 +256,10 @@ test("sitemap contains only indexable pages", () => {
   const listed = sitemap().map(({ url }) => url);
   assert.ok(listed.includes("https://btsguide.com/"));
   assert.ok(listed.includes("https://btsguide.com/ru/"));
+  assert.equal(new Set(listed).size, listed.length);
   for (const [lang, path] of [["en", "/about"], ["ru", "/sources"], ["en", "/fares"], ["ru", "/fares"], ["en", "/stations/W1"], ["ru", "/guides/terminal-21"]]) {
-    const metadata = pageMetadata(lang, path, "Draft", "Draft", true);
-    assert.equal(metadata.robots.index, false);
-    assert.ok(!listed.includes(metadata.alternates.canonical));
+    assert.ok(listed.includes(pageMetadata(lang, path, "Page", "Page").alternates.canonical));
   }
+  for (const station of METRO_STATIONS) for (const lang of ["en", "ru"]) assert.ok(listed.includes(pageMetadata(lang, `/stations/${station.code}`, "Station", "Station").alternates.canonical));
+  assert.ok(!listed.some((url) => /\/404\/|\/get-to\/|\/_[^/]+\//.test(url)));
 });
