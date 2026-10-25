@@ -26,6 +26,8 @@ Markdown guides are served at `/guides/[slug]/`; legacy `/get-to/[slug]/` aliase
 
 After publishing, inspect `/stations/BL01/` and `/ru/stations/BL01/` for `index, follow`, and check `/sitemap.xml` for the same URLs as the verified export. Production deployment requires an authenticated Cloudflare account and the existing Pages project; do not create a replacement project.
 
+Production release verified on 2026-10-25: deployment `b956f71a.btsguide.pages.dev`, source commit `8d332bd` from `task/T14-enable-indexing`. Published the tested `out/` directly to the existing `btsguide` project; no Git push or merge to `main`. Live EN/RU home titles are correct, station and section pages return `index, follow`, and all 250 sitemap URLs match the tested export. Merge PR #1 before a subsequent Git-based production build so it retains these fixes.
+
 On 2026-10-25, `https://www.btsguide.com/stations/BL01/` returned a 301 redirect to `https://btsguide.com/stations/BL01/`. Preserve this Cloudflare configuration and recheck it after deployment. Pages `_redirects` does not support domain-level redirects.
 
 References: [Cloudflare Pages static Next.js guide](https://developers.cloudflare.com/pages/framework-guides/nextjs/deploy-a-static-nextjs-site/), [Cloudflare build image and Node version](https://developers.cloudflare.com/pages/configuration/build-image/), [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports).
