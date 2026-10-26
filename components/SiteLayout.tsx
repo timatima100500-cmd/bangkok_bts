@@ -19,9 +19,11 @@ const geistMono = Geist_Mono({
 export default function SiteLayout({
   children,
   lang,
+  analytics,
 }: Readonly<{
   children: React.ReactNode;
   lang: Lang;
+  analytics?: React.ReactNode;
 }>) {
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -39,6 +41,7 @@ export default function SiteLayout({
             </div>
           </LanguageProvider>
         </ThemeProvider>
+        {analytics}
       </body>
     </html>
   );
