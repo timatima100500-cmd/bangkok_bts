@@ -11,6 +11,7 @@
     "test:export": "node --test tests/export-indexing.mjs"
   },
   "dependencies": {
+    "@next/third-parties": "^15.5.28",
     "gray-matter": "^4.0.3",
     "marked": "^18.1.1",
     "next": "15.5.28",

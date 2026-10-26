@@ -11,6 +11,7 @@ This repository builds a static Next.js site. Deployment is a separate owner act
 - Production branch: `main` (after the task branch is reviewed and merged)
 - Environment variable: `NODE_VERSION=24` (also required by the native TypeScript test runner)
 - Optional environment variable: `SITE_URL=https://btsguide.com`; this is already the metadata default.
+- Optional build environment variable: `NEXT_PUBLIC_GA_ID` (your GA4 measurement ID). Set it in Cloudflare Pages before building. Both EN and RU layouts load GA4 only when this variable is nonempty. Static exports bake the ID into the build, so changing the variable requires a new build and deployment. Do not add a second manual `gtag.js` snippet alongside this integration.
 
 The build writes `out/index.html`, `out/ru/index.html`, `out/sitemap.xml`, and `out/robots.txt`. No server runtime, middleware or API routes are used.
 
