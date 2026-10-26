@@ -4,13 +4,17 @@ import { GUIDES } from "@/data/guides";
 import { getMetroStationByCode } from "@/data/metroStations";
 import { siteCopy, sitePath, stationName, pageMetadata } from "@/lib/site";
 import type { Lang } from "@/lib/i18n";
+import { getContentEntry } from "@/lib/contentLoader";
+import MarkdownPage, { markdownMetadata } from "@/components/pages/MarkdownPage";
 
 export function guideMetadata(slug: string, lang: Lang) {
+  if (getContentEntry(lang, "guides", slug)) return markdownMetadata(lang, "guides", slug);
   const guide = GUIDES.find((candidate) => candidate.slug === slug);
-  return guide ? pageMetadata(lang, `/guides/${slug}`, guide.title[lang], guide.text[lang], true) : {};
+  return guide ? pageMetadata(lang, `/guides/${slug}`, guide.title[lang], guide.text[lang], false) : {};
 }
 
 export default function GuidePage({ slug, lang }: { slug: string; lang: Lang }) {
+  if (getContentEntry(lang, "guides", slug)) return <MarkdownPage lang={lang} collection="guides" slug={slug} />;
   const guide = GUIDES.find((candidate) => candidate.slug === slug);
   if (!guide) notFound();
   const station = getMetroStationByCode(guide.stationCode)!;

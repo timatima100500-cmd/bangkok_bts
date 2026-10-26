@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:export": "node --test tests/export-indexing.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

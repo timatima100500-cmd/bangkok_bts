@@ -1,6 +1,6 @@
 import { pageMetadata } from "@/lib/site";
 
-export const metadata = pageMetadata("en", "/about", "About", "About this independent Bangkok metro guide.", true);
+export const metadata = pageMetadata("en", "/about", "About", "About this independent Bangkok metro guide.", false);
 
 export default function Page() {
   return <article className="space-y-3 py-8">
