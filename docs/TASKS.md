@@ -26,6 +26,7 @@
 | T13 | 12 | Отчёт по метрикам GSC (данные даёт Тима) → `docs/REVIEW-2027-01.md` | todo |
 | T14 | 1 | Открыть индексацию публичных страниц, исправить тайтлы и sitemap (по прямому указанию владельца) | review |
 | T15 | 1 | Подключить GA4 через @next/third-parties@15 и NEXT_PUBLIC_GA_ID в EN/RU layouts | review |
+| T16 | 1 | Подключить Microsoft Clarity через NEXT_PUBLIC_CLARITY_ID в EN/RU layouts | review |
 
 ---
 
